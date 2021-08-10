@@ -131,3 +131,7 @@ dmypy.json
 
 # IDE
 .idea/
+
+# secrets
+secrets/key-file
+key-file
