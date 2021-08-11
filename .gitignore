@@ -135,3 +135,4 @@ dmypy.json
 # secrets
 secrets/key-file
 key-file
+secret-utils/
