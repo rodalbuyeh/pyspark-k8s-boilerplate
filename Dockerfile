@@ -1,8 +1,5 @@
 FROM ubuntu:18.04
 
-# change shell to bash which supports parameter expansion
-SHELL ["/bin/bash", "-c"]
-
 # toggle these versions judiciously, there are downstream effects and
 # interactions between them
 ENV HADOOP_VERSION=3.2.2 \
@@ -10,6 +7,28 @@ ENV HADOOP_VERSION=3.2.2 \
     SCALA_VERSION=2.12.0 \
     PYTHON_VERSION=3.9 \
     JDK_VERSION=8
+
+# Specify the user that the main process will run as
+ARG spark_uid=185
+
+# Add packages and configure based on official spark-on-k8s dockerfile
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini \
+    /usr/bin/tini
+RUN chmod +x /usr/bin/tini
+
+RUN set -ex && \
+    apt-get update && \
+    apt-get install -y libc6 libpam-modules krb5-user libnss3 procps && \
+    ln -s /lib /lib64 && \
+    rm /bin/sh && \
+    ln -sv /bin/bash /bin/sh && \
+    echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
+    chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+    rm -rf /var/cache/apt/*
+
+# change shell to bash which supports parameter expansion
+SHELL ["/bin/bash", "-c"]
 
 # install some essential utilities
 RUN apt-get update && apt-get install curl -y && apt-get install vim -y
@@ -28,14 +47,17 @@ RUN apt-get install wget -y && \
     wget www.scala-lang.org/files/archive/scala-${SCALA_VERSION}.deb && \
     dpkg -i scala-${SCALA_VERSION}.deb
 
-
 # install spark
 RUN export SPARK_PRE=https://mirrors.sonic.net/apache/spark/spark- && \
     export \
     SPARK_TAR=spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION:0:3}.tgz && \
     wget ${SPARK_PRE}${SPARK_VERSION}/${SPARK_TAR} && \
     tar xvf ${SPARK_TAR} && \
-    mv ${SPARK_TAR:0:-4} /opt/spark
+    mv ${SPARK_TAR:0:-4} /opt/spark && \
+    mkdir -p /opt/spark/work-dir && \
+    cp -r /opt/spark/kubernetes/tests /opt/spark/tests && \
+    cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt/ && \
+    cp /opt/spark/kubernetes/dockerfiles/spark/decom.sh /opt/
 
 ENV SPARK_HOME=/opt/spark \
     PATH=$PATH:/opt/spark/bin \
@@ -74,7 +96,7 @@ RUN curl https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz \
 
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
-# activate gcloud service account
+# activate gcloud service account (but use better secret management in prod...)
 ADD secrets/key-file /key-file
 RUN gcloud auth activate-service-account --key-file=/key-file
 
@@ -84,3 +106,16 @@ ENV GOOGLE_APPLICATION_CREDENTIALS /key-file
 
 # set default project
 RUN gcloud config set project ${gcp_project}
+
+###############################################################################
+# Cloud specific configuration done                                           #
+###############################################################################
+
+# some final housekeeping from official spark-on-k8s dockerfile
+WORKDIR /opt/spark/work-dir
+RUN chmod g+w /opt/spark/work-dir
+RUN chmod a+x /opt/decom.sh
+
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
+USER ${spark_uid}
