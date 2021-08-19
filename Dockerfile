@@ -9,7 +9,7 @@ ENV HADOOP_VERSION=3.2.2 \
     JDK_VERSION=8
 
 # Specify the user that the main process will run as
-ARG spark_uid=185
+#ARG spark_uid=185
 
 # Add packages and configure based on official spark-on-k8s dockerfile
 ENV TINI_VERSION v0.19.0
@@ -119,4 +119,4 @@ RUN chmod a+x /opt/decom.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
-USER ${spark_uid}
+#USER ${spark_uid}
