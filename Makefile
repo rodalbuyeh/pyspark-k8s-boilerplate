@@ -19,6 +19,18 @@ it_shell:                   ## run interactive shell in docker container
 
 # k8s commands
 
+show_k8s_contexts:          ## show available kubernetes contexts
+	kubectl config get-contexts
+
+
+use_k8s_context:
+ifdef name
+	kubectl config use-context $(name)
+else
+	@echo 'No name defined. Run *kubectl config get-contexts pods* then indicate selection as follows:'
+	@echo 'make name=clustername use_k8s_context'
+endif
+
 start_k8s_local:            ## start local k8s via minikube
 	minikube start --driver=hyperkit --memory 8192 --cpus 4
 
@@ -29,11 +41,40 @@ delete_k8s_local:           ## delete local k8s
 	minikube delete
 
 verify_k8s_dns:             ## verify that k8s dns is working properly
-	kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml
 	sleep 10
+	kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml
+	sleep 20
 	kubectl get pods dnsutils
 	kubectl exec -i -t dnsutils -- nslookup kubernetes.default
 	kubectl delete -f https://k8s.io/examples/admin/dns/dnsutils.yaml
+
+init_spark_k8s:             ## inititalize spark on kubernetes environment in your current kubectl context
+	kubectl apply -f manifests/spark-namespace.yaml
+	helm repo add spark-operator https://googlecloudplatform.github.io/spark-on-k8s-operator
+	helm install my-release spark-operator/spark-operator --namespace spark-operator --set image.tag=v1beta2-1.2.3-3.1.1
+	kubectl create clusterrolebinding ${KUBEUSER}-cluster-admin-binding --clusterrole=cluster-admin \
+	--user=${KUBEUSER}@${KUBEDOMAIN}
+	helm status --namespace spark-operator my-release
+	kubectl config set-context --current --namespace=spark-operator
+	echo 'switched k8s context to spark operator namespace'
+	kubectl get namespace
+	sleep 5
+	kubectl get pods
+	kubectl apply -f manifests/spark-rbac.yaml
+
+spark_port_forward:
+ifdef spark-driver
+	kubectl port-forward -n spark-operator $(spark-driver) 4041:4040
+else
+	@echo 'No driver defined. Run *kubectl get pods* then indicate as follows: *make spark-driver=podname port_forward*'
+endif
+
+set_default_namespace:
+ifdef namespace
+	kubectl config set-context --current --namespace=$(namespace)
+else
+	@echo 'No namespace defined. Indicate as follows: *make namespace=name set_default_namespace*'
+endif
 
 
 # python
@@ -54,11 +95,8 @@ install: clean build        ## install python wheel
 clean:                      ## clean artifacts
 	rm -r -f dist
 	rm -r -f src/*.egg-info
-
-clear_mypy_cache:           ## clear mypy cache
 	rm -r -f .mypy_cache
 
-
-analyze_code:               ## run code analysis
+analyze:                    ## run code analysis
 	mypy src/pyspark_k8s_boilerplate
 	flake8 src/pyspark_k8s_boilerplate
