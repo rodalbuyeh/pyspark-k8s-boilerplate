@@ -15,6 +15,7 @@ Have a thing about prerequisites
 THASSIT 
 
 - NOTE you can add an environment varibale for PYSPARK_CONFIG_DIR and it'll override the baked-in config 
+- should prob put a burb in the readme on config management 
 
 References:
 - https://github.com/mehd-io/pyspark-boilerplate-mehdio
