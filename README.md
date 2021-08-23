@@ -10,3 +10,15 @@ Have a thing about prerequisites
 - helm 
 - add environment variables: KUBEUSER, PROJECT (optional and TODO make this conditional in docker)
 THASSIT 
+
+- NOTE you can add an environment varibale for PYSPARK_CONFIG_DIR and it'll override the baked-in config 
+
+References:
+- https://github.com/mehd-io/pyspark-boilerplate-mehdio
+- https://github.com/AlexIoannides/pyspark-example-project
+- https://github.com/ekampf/PySpark-Boilerplate
+
+
+This looks interesting too, stash for later:
+
+https://github.com/AlexIoannides/kubernetes-mlops
