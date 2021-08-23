@@ -138,3 +138,6 @@ dmypy.json
 secrets/key-file
 key-file
 secret-utils/
+
+# mac stuff
+*.icloud
