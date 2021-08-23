@@ -79,9 +79,10 @@ endif
 
 # python
 
-create_venv:                ## make and activate python virtual environment
+create_activate_venv:       ## make and activate python virtual environment
 	python3 -m venv env
 	source env/bin/activate
+	pip install build
 
 delete_venv:                ## delete python virtual environment
 	rm -r env
@@ -89,7 +90,10 @@ delete_venv:                ## delete python virtual environment
 build:                      ## build python tarball and wheel
 	python3 -m build
 
-install: clean build        ## install python wheel
+install:                    ## install python wheel
+	pip3 install dist/pyspark_k8s_boilerplate-*.whl --no-cache-dir --force-reinstall
+
+clean_install: clean build  ## clean artifacts and install install python wheel
 	pip3 install dist/pyspark_k8s_boilerplate-*.whl --no-cache-dir --force-reinstall
 
 clean:                      ## clean artifacts
