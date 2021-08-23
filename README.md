@@ -1,6 +1,9 @@
 # pyspark-k8s-boilerplate
 Template for PySpark on Kubernetes
 
+Assuming:
+- you know how to deal with authentication, note that there are a number of ways but for the purposes of this demo I'm using the easiest (and most insecure)
+
 Have a thing about prerequisites
 - unix or linux like OS, and accordingly know some bash scripting
 - make installed on machine
