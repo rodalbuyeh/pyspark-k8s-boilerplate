@@ -21,8 +21,7 @@ if __name__ == "__main__":
     # Add handlers to the logger
     logger.addHandler(c_handler)
     logger.addHandler(f_handler)
-    logger.info(("Pipeline configs set"))
-    logger.info("Model Name: " + str("model_name"))
+
 
     parser = argparse.ArgumentParser(description="Run a freelunch job")
     parser.add_argument('--job', type=str, required=True, dest='job_name',
