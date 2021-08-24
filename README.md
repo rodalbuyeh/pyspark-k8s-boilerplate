@@ -32,3 +32,6 @@ https://github.com/AlexIoannides/kubernetes-mlops
 - also note that you have specific config handlers, and specific loggers 
 
 TODO add an interactive cluster mode 
+TODO drop root user installations 
+
+Note that the entrypoint only works if you have an 'execute' method but you can still run modules directly
