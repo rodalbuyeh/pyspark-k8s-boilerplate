@@ -5,12 +5,14 @@ from pyspark_k8s_boilerplate.config.handlers import cfg
 
 logger = logging.getLogger(cfg.app_name)
 
+logger.setLevel(logging.INFO)
+
 # create handlers
 c_handler = logging.StreamHandler()
 f_handler = logging.FileHandler(f'/tmp/{cfg.app_name}.log')
 
-c_handler.setLevel(logging.DEBUG)
-f_handler.setLevel(logging.DEBUG)
+c_handler.setLevel(logging.INFO)
+f_handler.setLevel(logging.INFO)
 
 # create formatters and add it to handlers
 formatter = logging.Formatter('%(asctime)s - %(name)s - '
