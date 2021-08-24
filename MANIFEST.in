@@ -1,1 +1,1 @@
-include src/pyspark_k8s_boilerplate/configs/conf.yaml
+include src/pyspark_k8s_boilerplate/config/conf.yaml
