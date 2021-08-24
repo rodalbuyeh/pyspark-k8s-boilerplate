@@ -5,30 +5,32 @@ import pathlib
 import yaml
 from typing import List, Any, Dict
 
-
-from pyspark_k8s_boilerplate.utils.log import logger
+logger = logging.getLogger(__name__)
 
 
 class Config(object):
 
-	def __init__(self):
-		self._config: Dict[str, Any] = self.read_config()
+	def __init__(self) -> None:
+		self._config: Dict = self.read_config()
 
 	@staticmethod
 	def read_config() -> Dict[str, Any]:
 
 		abs_config_path = os.getenv("PYSPARK_CONFIG_PATH")
 
+		path: str = ""
+
 		if abs_config_path:
-			path: str = abs_config_path
+			path += abs_config_path
 		else:
-			path: str = join(pathlib.Path(__file__).parent.resolve(), "conf.yaml")
+			path += join(pathlib.Path(__file__).parent.resolve(), "conf.yaml")
 
 		with open(path, 'r') as stream:
 			try:
 				return yaml.safe_load(stream)
 			except yaml.YAMLError as exc:
 				logger.exception(exc)
+		return {}
 
 
 class GeneralConfig(Config):
@@ -69,8 +71,8 @@ class ModelConfig(Config):
 		return self._config["model"]["exclude_features"]
 
 
-cfg = GeneralConfig()
+cfg: GeneralConfig = GeneralConfig()
 
-data_cfg = DataConfig()
+data_cfg: DataConfig = DataConfig()
 
-model_cfg = ModelConfig()
+model_cfg: ModelConfig = ModelConfig()
