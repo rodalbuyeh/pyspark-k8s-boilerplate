@@ -1,29 +1,15 @@
 import argparse
 import importlib
-import logging
 import os
 import time
 
+from pyspark_k8s_boilerplate.config.handlers import cfg
+from pyspark_k8s_boilerplate.utils.log import logger
+
+
 if __name__ == "__main__":
 
-    logger = logging.getLogger('freelunch')
-    logger.setLevel(logging.DEBUG)
-    # create handlers
-    c_handler = logging.StreamHandler()
-    f_handler = logging.FileHandler('/tmp/freelunch.log')
-    c_handler.setLevel(logging.DEBUG)
-    f_handler.setLevel(logging.DEBUG)
-    # create formatters and add it to handlers
-    formatter = logging.Formatter('%(asctime)s - %(name)s -' +
-                                  ' %(levelname)s - %(message)s')
-    c_handler.setFormatter(formatter)
-    f_handler.setFormatter(formatter)
-    # Add handlers to the logger
-    logger.addHandler(c_handler)
-    logger.addHandler(f_handler)
-
-
-    parser = argparse.ArgumentParser(description="Run a freelunch job")
+    parser = argparse.ArgumentParser(description=f"Run a {cfg.app_name} job")
     parser.add_argument('--job', type=str, required=True, dest='job_name',
                         help="The Name of the job module you want to run")
     parser.add_argument('--class', type=str, required=True, dest='class_name',
