@@ -26,3 +26,5 @@ References:
 This looks interesting too, stash for later:
 
 https://github.com/AlexIoannides/kubernetes-mlops
+
+- also note that you have specific config handlers, and specific loggers 
