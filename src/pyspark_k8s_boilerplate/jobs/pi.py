@@ -6,9 +6,15 @@ from pyspark_k8s_boilerplate.utils.log import logger
 from pyspark_k8s_boilerplate.config.handlers import data_cfg
 
 
-def spark_pi(partitions: int = data_cfg.pi_partitions) -> None:
+def execute(partitions: int = data_cfg.pi_partitions) -> None:
 
     spark = get_spark_session("PythonPi")
+
+    # note: the argument parser in main.py converts all dynamic job arguments to strings, we'll handle here
+    if isinstance(partitions, str) and partitions.isnumeric():
+        partitions = int(partitions)
+    elif isinstance(partitions, str) and not partitions.isnumeric():
+        logger.exception("Please supply a valid integer-like format in the CLI")
 
     n = 100000 * partitions
 
@@ -26,4 +32,4 @@ def spark_pi(partitions: int = data_cfg.pi_partitions) -> None:
 
 
 if __name__ == "__main__":
-    spark_pi()
+    execute()
