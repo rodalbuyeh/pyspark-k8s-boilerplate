@@ -14,6 +14,8 @@ Have a thing about prerequisites
 - add environment variables: KUBEUSER, PROJECT (optional and TODO make this conditional in docker)
 THASSIT 
 
+You might also indicate that GCP is an almost-prerequisite if you want to run this for cloud ops 
+
 - NOTE you can add an environment varibale for PYSPARK_CONFIG_DIR and it'll override the baked-in config 
 - should prob put a burb in the readme on config management 
 
@@ -28,3 +30,5 @@ This looks interesting too, stash for later:
 https://github.com/AlexIoannides/kubernetes-mlops
 
 - also note that you have specific config handlers, and specific loggers 
+
+TODO add an interactive cluster mode 

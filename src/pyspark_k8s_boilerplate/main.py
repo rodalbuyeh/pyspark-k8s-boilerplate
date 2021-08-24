@@ -15,8 +15,8 @@ if __name__ == "__main__":
     parser.add_argument('--class', type=str, required=True, dest='class_name',
                         help="The name of the class you want to run")
     parser.add_argument('--job-args', nargs='*', dest='job_args',
-                        help="extra args to send to the job, " +
-                             "for instance: jobs=prep, jobs=train")
+                        help="extra args to send to the job, for instance:"
+                             " jobs=prep, jobs=train")
 
     args = parser.parse_args()
     logger.info("Called with arguments %s" % args)

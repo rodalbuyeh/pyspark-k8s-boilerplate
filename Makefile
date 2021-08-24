@@ -13,15 +13,13 @@ help:                       ## show this help
 build-image:                ## build docker image
 	docker build -t pyspark-k8s-boilerplate:latest . --build-arg gcp_project=${PROJECT}
 
-it-shell:                   ## run interactive shell in docker container
+it-shell: build-image       ## run interactive shell in docker container
 	docker run -it pyspark-k8s-boilerplate bash
-
 
 # k8s commands
 
 show-k8s-contexts:          ## show available kubernetes contexts
 	kubectl config get-contexts
-
 
 use-k8s-context:
 ifdef name
@@ -97,10 +95,15 @@ clean-install: clean build  ## clean artifacts and install install python wheel
 	pip3 install dist/pyspark_k8s_boilerplate-*.whl --no-cache-dir --force-reinstall
 
 clean:                      ## clean artifacts
-	rm -r -f dist
+	rm -r -f dist*
 	rm -r -f src/*.egg-info
 	rm -r -f .mypy_cache
 
-analyze:                    ## run code analysis
+check_types:               	## run mypy type checker
 	mypy src/pyspark_k8s_boilerplate
+
+lint:                    	## run flake8 linter
 	flake8 src/pyspark_k8s_boilerplate
+
+analyze: check_types lint	## run full code analysis
+

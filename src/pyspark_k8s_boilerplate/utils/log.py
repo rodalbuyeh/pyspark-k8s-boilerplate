@@ -13,8 +13,8 @@ c_handler.setLevel(logging.DEBUG)
 f_handler.setLevel(logging.DEBUG)
 
 # create formatters and add it to handlers
-formatter = logging.Formatter('%(asctime)s - %(name)s -' +
-                              ' %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(name)s - '
+                              '%(levelname)s - %(message)s')
 
 c_handler.setFormatter(formatter)
 f_handler.setFormatter(formatter)
