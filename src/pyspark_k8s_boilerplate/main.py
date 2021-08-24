@@ -12,8 +12,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=f"Run a {cfg.app_name} job")
     parser.add_argument('--job', type=str, required=True, dest='job_name',
                         help="The Name of the job module you want to run")
-    parser.add_argument('--class', type=str, required=True, dest='class_name',
-                        help="The name of the class you want to run")
     parser.add_argument('--job-args', nargs='*', dest='job_args',
                         help="extra args to send to the job, for instance:"
                              " jobs=prep, jobs=train")
@@ -22,7 +20,7 @@ if __name__ == "__main__":
     logger.info("Called with arguments %s" % args)
 
     environment = {
-        'FREE-LUNCH-JOB-ARGS': ' '.join(args.job_args) if args.job_args else ''
+        'JOB-ARGS': ' '.join(args.job_args) if args.job_args else ''
     }
 
     if args.job_args:
@@ -36,10 +34,10 @@ if __name__ == "__main__":
                 % (args.job_name, environment))
 
     os.environ.update(environment)
-    job_module = importlib.import_module(args.job_name)
+    job_module = importlib.import_module(args.job_name) # TODO you got the module by name. I think an important bit here is to have a standardized format so you cna sitl call 'main' like below
 
     start = time.time()
-    getattr(job_module, args.class_name)().main(**job_args)
+    job_module.execute(**job_args)
     end = time.time()
 
     total = end - start
