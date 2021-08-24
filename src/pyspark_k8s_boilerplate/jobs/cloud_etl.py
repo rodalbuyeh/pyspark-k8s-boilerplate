@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame
 from pyspark_k8s_boilerplate.config.handlers import data_cfg
 
 
-def run_cloud_etl(bucket_root: str = data_cfg.object_bucket) -> None:
+def execute(bucket_root: str = data_cfg.titanic_root) -> None:
 
 	spark = get_spark_session("cloud_etl")
 
@@ -12,10 +12,10 @@ def run_cloud_etl(bucket_root: str = data_cfg.object_bucket) -> None:
 	df: DataFrame = spark.read.csv(f"{bucket_root}titanic.csv", header=True)
 
 	logger.info("Summarize and write to object storage as parquet")
-	df.describe().write.parquet(f"{bucket_root}titanic_summary.parquet")
+	df.describe().write.mode("overwrite").parquet(f"{bucket_root}titanic_summary.parquet")
 
 	spark.stop()
 
 
 if __name__ == "__main__":
-	run_cloud_etl()
+	execute()
