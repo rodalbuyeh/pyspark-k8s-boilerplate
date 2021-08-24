@@ -11,6 +11,8 @@ __pycache__/
 build/
 develop-eggs/
 dist/
+dist*/
+dist
 downloads/
 eggs/
 .eggs/
@@ -136,3 +138,6 @@ dmypy.json
 secrets/key-file
 key-file
 secret-utils/
+
+# mac stuff
+*.icloud

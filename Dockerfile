@@ -9,7 +9,7 @@ ENV HADOOP_VERSION=3.2.2 \
     JDK_VERSION=8
 
 # Specify the user that the main process will run as
-ARG spark_uid=185
+#ARG spark_uid=185
 
 # Add packages and configure based on official spark-on-k8s dockerfile
 ENV TINI_VERSION v0.19.0
@@ -37,7 +37,8 @@ RUN apt-get update && apt-get install curl -y && apt-get install vim -y
 RUN apt-get install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && apt-get update && \
     export DEBIAN_FRONTEND="noninteractive" && \
-    apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION:0:1}-pip
+    apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION:0:1}-pip && \
+    apt-get install -y python${PYTHON_VERSION}-distutils
 
 # install jdk
 RUN apt-get install openjdk-${JDK_VERSION}-jdk -y
@@ -118,4 +119,4 @@ RUN chmod a+x /opt/decom.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
-USER ${spark_uid}
+#USER ${spark_uid}

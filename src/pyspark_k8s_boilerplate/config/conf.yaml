@@ -1,0 +1,12 @@
+general:
+  app_name: pyspark_k8s_boilerplate
+  sample_configs: [1, 2, 3, 4]
+data:
+  object_bucket: scratch_bucket
+  database: BigQueryDev
+model:
+  cv_strategy: time-series
+  imputation: zero
+  selection: RFE
+  exclude_features: [A, B, C, D]
+
