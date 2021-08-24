@@ -34,7 +34,7 @@ if __name__ == "__main__":
                 % (args.job_name, environment))
 
     os.environ.update(environment)
-    job_module = importlib.import_module(args.job_name) # TODO you got the module by name. I think an important bit here is to have a standardized format so you cna sitl call 'main' like below
+    job_module = importlib.import_module(args.job_name)
 
     start = time.time()
     job_module.execute(**job_args)
