@@ -116,6 +116,14 @@ RUN gcloud config set project ${gcp_project}
 WORKDIR /opt/spark/work-dir
 RUN chmod g+w /opt/spark/work-dir
 RUN chmod a+x /opt/decom.sh
+ADD . /opt/spark/work-dir
+RUN apt-get install -y python3-venv
+RUN pip3 install build
+RUN python${PYTHON_VERSION} -m pip install --upgrade setuptools
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python${PYTHON_VERSION} get-pip.py
+RUN make clean-install
+#TODO need to reorganize this last bit, also avoid using the wrong build version (i think its 3.6 rn)
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
