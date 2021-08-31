@@ -6,7 +6,7 @@ from pyspark_k8s_boilerplate.utils.log import logger
 from pyspark_k8s_boilerplate.config.handlers import data_cfg
 
 
-def execute(partitions: int = data_cfg.pi_partitions) -> None:
+def execute(partitions: int = int(data_cfg.pi_partitions)) -> None:
 
     spark = get_spark_session("PythonPi")
 
