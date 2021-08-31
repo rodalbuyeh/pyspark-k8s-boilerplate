@@ -38,7 +38,12 @@ RUN apt-get install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && apt-get update && \
     export DEBIAN_FRONTEND="noninteractive" && \
     apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION:0:1}-pip && \
-    apt-get install -y python${PYTHON_VERSION}-distutils
+    apt-get install -y python${PYTHON_VERSION}-distutils && \
+    apt-get install -y python${PYTHON_VERSION}-venv && \
+    python${PYTHON_VERSION} -m pip install --upgrade setuptools && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python${PYTHON_VERSION} get-pip.py && \
+    pip${PYTHON_VERSION} install build
 
 # install jdk
 RUN apt-get install openjdk-${JDK_VERSION}-jdk -y
@@ -116,6 +121,9 @@ RUN gcloud config set project ${gcp_project}
 WORKDIR /opt/spark/work-dir
 RUN chmod g+w /opt/spark/work-dir
 RUN chmod a+x /opt/decom.sh
+ADD . /opt/spark/work-dir
+
+RUN make clean-install
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 

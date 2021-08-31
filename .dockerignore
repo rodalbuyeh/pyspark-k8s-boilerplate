@@ -135,8 +135,6 @@ dmypy.json
 .idea/
 
 # secrets
-secrets/key-file
-key-file
 secret-utils/
 
 # mac stuff

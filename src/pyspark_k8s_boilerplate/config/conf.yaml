@@ -4,6 +4,8 @@ general:
 data:
   object_bucket: scratch_bucket
   database: BigQueryDev
+  pi_partitions: 4
+  titanic_root: gs://albell-test/
 model:
   cv_strategy: time-series
   imputation: zero

@@ -52,6 +52,14 @@ class DataConfig(Config):
 	def database(self) -> str:
 		return self._config["data"]["database"]
 
+	@property
+	def pi_partitions(self) -> str:
+		return self._config["data"]["pi_partitions"]
+
+	@property
+	def titanic_root(self) -> str:
+		return self._config["data"]["titanic_root"]
+
 
 class ModelConfig(Config):
 	@property
