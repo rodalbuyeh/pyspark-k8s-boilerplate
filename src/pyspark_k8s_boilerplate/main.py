@@ -37,7 +37,7 @@ if __name__ == "__main__":
     job_module = importlib.import_module(args.job_name)
 
     start = time.time()
-    job_module.execute(**job_args)
+    job_module.execute(**job_args)  # type: ignore
     end = time.time()
 
     total = end - start
