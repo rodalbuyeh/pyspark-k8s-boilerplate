@@ -38,7 +38,12 @@ RUN apt-get install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && apt-get update && \
     export DEBIAN_FRONTEND="noninteractive" && \
     apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION:0:1}-pip && \
-    apt-get install -y python${PYTHON_VERSION}-distutils
+    apt-get install -y python${PYTHON_VERSION}-distutils && \
+    apt-get install -y python${PYTHON_VERSION}-venv && \
+    python${PYTHON_VERSION} -m pip install --upgrade setuptools && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python${PYTHON_VERSION} get-pip.py && \
+    pip${PYTHON_VERSION} install build
 
 # install jdk
 RUN apt-get install openjdk-${JDK_VERSION}-jdk -y
@@ -117,13 +122,8 @@ WORKDIR /opt/spark/work-dir
 RUN chmod g+w /opt/spark/work-dir
 RUN chmod a+x /opt/decom.sh
 ADD . /opt/spark/work-dir
-RUN apt-get install -y python3-venv
-RUN pip3 install build
-RUN python${PYTHON_VERSION} -m pip install --upgrade setuptools
-RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-RUN python${PYTHON_VERSION} get-pip.py
+
 RUN make clean-install
-#TODO need to reorganize this last bit, also avoid using the wrong build version (i think its 3.6 rn)
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
