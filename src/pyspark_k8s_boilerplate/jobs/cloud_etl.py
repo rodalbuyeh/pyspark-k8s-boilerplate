@@ -14,6 +14,7 @@ def execute(bucket_root: str = data_cfg.titanic_root) -> None:
 	logger.info("Summarize and write to object storage as parquet")
 	df.describe().write.mode("overwrite").parquet(f"{bucket_root}titanic_summary.parquet")
 
+	logger.info("Cloud ETL job done.")
 	spark.stop()
 
 
