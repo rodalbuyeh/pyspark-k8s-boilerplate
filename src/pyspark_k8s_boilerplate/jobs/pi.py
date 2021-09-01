@@ -6,7 +6,7 @@ from pyspark_k8s_boilerplate.utils.log import logger
 from pyspark_k8s_boilerplate.config.handlers import data_cfg
 
 
-def execute(partitions: int = int(data_cfg.pi_partitions)) -> None:
+def execute(partitions: int = int(data_cfg.pi_partitions), message: str = "delicious") -> None:
 
     spark = get_spark_session("PythonPi")
 
@@ -27,6 +27,8 @@ def execute(partitions: int = int(data_cfg.pi_partitions)) -> None:
                                            partitions).map(f).reduce(add)
 
     logger.info("Pi is roughly %f" % (4.0 * count / n))
+
+    logger.info(f"And pi is {message}")
 
     spark.stop()
 

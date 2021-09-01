@@ -34,4 +34,12 @@ https://github.com/AlexIoannides/kubernetes-mlops
 TODO add an interactive cluster mode 
 TODO drop root user installations 
 
-Note that the entrypoint only works if you have an 'execute' method but you can still run modules directly
+Note that the entrypoint only works if you have an 'execute' method but you can still run modules directly. Main purpose of the cli is to add args to a job that override config.yaml. 
+
+Put a blurb on how they'll need their own container registry/ container repository .
+
+This can be a heavy weight image so you might want to run this on a build server in the cloud and push to whatever container registry.. rather than locally and pushing layers over network.
+
+Make sure kubnernetes cluster (minikube, perhaps GKE as well) is configured to read from container registry. 
+
+note if they are having problems with image pull, run docker pull to get image locally.   
