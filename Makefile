@@ -16,6 +16,10 @@ build-image:                ## build docker image
 it-shell: build-image       ## run interactive shell in docker container
 	docker run -it pyspark-k8s-boilerplate bash
 
+push:						## push image to GCR
+	docker tag pyspark-k8s-boilerplate gcr.io/${PROJECT}/pyspark-k8s-boilerplate
+	docker push gcr.io/${PROJECT}/pyspark-k8s-boilerplate
+
 # k8s commands
 
 show-k8s-contexts:          ## show available kubernetes contexts
@@ -64,7 +68,7 @@ spark-port-forward:
 ifdef spark-driver
 	kubectl port-forward -n spark-operator $(spark-driver) 4041:4040
 else
-	@echo 'No driver defined. Run *kubectl get pods* then indicate as follows: *make spark-driver=podname port_forward*'
+	@echo 'No driver defined. Run *kubectl get pods* then indicate as follows: *make spark-driver=podname spark-port-forward*'
 endif
 
 set-default-namespace:

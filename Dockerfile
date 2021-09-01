@@ -46,7 +46,8 @@ RUN apt-get install software-properties-common -y && \
     pip${PYTHON_VERSION} install build
 
 # install jdk
-RUN apt-get install openjdk-${JDK_VERSION}-jdk -y
+RUN apt-get install openjdk-${JDK_VERSION}-jdk -y && \
+     ln -s /usr/bin/java /bin/java
 
 # install scala
 RUN apt-get install wget -y && \
