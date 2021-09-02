@@ -82,7 +82,7 @@ patch-container-registry:   ## patch cluster to point to private repository - us
 	kubectl --namespace=spark-operator create secret docker-registry gcr-json-key \
 			  --docker-server=https://gcr.io \
 			  --docker-username=_json_key \
-			  --docker-password="$(cat secrets/key-file)" \
+			  --docker-password="$$(cat secrets/key-file)" \
 			  --docker-email=${KUBEUSER}@${KUBEDOMAIN}
 
 	kubectl --namespace=spark-operator patch serviceaccount my-release-spark \
