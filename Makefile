@@ -88,7 +88,12 @@ patch-container-registry:   ## patch cluster to point to private repository - us
 	kubectl --namespace=spark-operator patch serviceaccount my-release-spark \
 			  -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
 
-
+run-job:		    ## run spark job via k8s manifest with injected environment variables
+ifdef manifest
+	envsubst < $(manifest) | kubectl apply -f -
+else
+	@echo 'No manifest defined. Indicate as follows: *make manifest=manifest/job.yaml run-job*'
+endif
 
 # python
 
