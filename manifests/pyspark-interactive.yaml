@@ -1,7 +1,7 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: pyspark-k8s-boilerplate-cloud-etl
+  name: pyspark-k8s-boilerplate-interactive
   namespace: spark-operator
 spec:
   type: Python
@@ -12,7 +12,7 @@ spec:
   mainApplicationFile: local:///opt/spark/work-dir/src/pyspark_k8s_boilerplate/main.py
   arguments:
     - --job
-    - pyspark_k8s_boilerplate.jobs.cloud_etl
+    - pyspark_k8s_boilerplate.jobs.interactive
   sparkVersion: "3.1.2"
   restartPolicy:
     type: Never

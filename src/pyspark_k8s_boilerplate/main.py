@@ -44,3 +44,5 @@ if __name__ == "__main__":
 
     logger.info("\nExecution of job %s took %s minutes."
                 % (args.job_name, str(round((total / 60), 2))))
+
+# TODO document, add unit tests (have it run in docker), add infra code

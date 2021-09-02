@@ -7,7 +7,7 @@ spec:
   type: Python
   pythonVersion: "3"
   mode: cluster
-  image: "gcr.io/albell-dev/pyspark-k8s-boilerplate:latest"
+  image: "gcr.io/${PROJECT}/pyspark-k8s-boilerplate:latest"
   imagePullPolicy: Always
   mainApplicationFile: local:///opt/spark/work-dir/src/pyspark_k8s_boilerplate/main.py
   arguments:
