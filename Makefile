@@ -16,12 +16,16 @@ build-image:                ## build docker image
 it-shell: build-image       ## run interactive shell in docker container
 	docker run -it pyspark-k8s-boilerplate bash
 
+push-container:		    ## push image to GCR
+	docker tag pyspark-k8s-boilerplate gcr.io/${PROJECT}/pyspark-k8s-boilerplate
+	docker push gcr.io/${PROJECT}/pyspark-k8s-boilerplate
+
 # k8s commands
 
 show-k8s-contexts:          ## show available kubernetes contexts
 	kubectl config get-contexts
 
-use-k8s-context:
+use-k8s-context:	    ## switch to a different k8s context
 ifdef name
 	kubectl config use-context $(name)
 else
@@ -60,20 +64,36 @@ init-spark-k8s:             ## inititalize spark on kubernetes environment in yo
 	kubectl get pods
 	kubectl apply -f manifests/spark-rbac.yaml
 
-spark-port-forward:
+spark-port-forward:	    ## port forward spark UI to localhost:4041
 ifdef spark-driver
 	kubectl port-forward -n spark-operator $(spark-driver) 4041:4040
 else
-	@echo 'No driver defined. Run *kubectl get pods* then indicate as follows: *make spark-driver=podname port_forward*'
+	@echo 'No driver defined. Run *kubectl get pods* then indicate as follows: *make spark-driver=podname spark-port-forward*'
 endif
 
-set-default-namespace:
+set-default-namespace:	    ## set default k8s namespace
 ifdef namespace
 	kubectl config set-context --current --namespace=$(namespace)
 else
 	@echo 'No namespace defined. Indicate as follows: *make namespace=name set_default_namespace*'
 endif
 
+patch-container-registry:   ## patch cluster to point to private repository - usually necessary for Minikube
+	kubectl --namespace=spark-operator create secret docker-registry gcr-json-key \
+			  --docker-server=https://gcr.io \
+			  --docker-username=_json_key \
+			  --docker-password="$$(cat secrets/key-file)" \
+			  --docker-email=${KUBEUSER}@${KUBEDOMAIN}
+
+	kubectl --namespace=spark-operator patch serviceaccount my-release-spark \
+			  -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
+
+run-job:		    ## run spark job via k8s manifest with injected environment variables
+ifdef manifest
+	envsubst < $(manifest) | kubectl apply -f -
+else
+	@echo 'No manifest defined. Indicate as follows: *make manifest=manifest/job.yaml run-job*'
+endif
 
 # python
 
@@ -98,11 +118,11 @@ clean:                      ## clean artifacts
 	rm -r -f src/*.egg-info
 	rm -r -f .mypy_cache
 
-check_types:               	## run mypy type checker
+check_types:                ## run mypy type checker
 	mypy src/pyspark_k8s_boilerplate
 
-lint:                    	## run flake8 linter
+lint:                       ## run flake8 linter
 	flake8 src/pyspark_k8s_boilerplate
 
-analyze: check_types lint	## run full code analysis
+analyze: check_types lint   ## run full code analysis
 

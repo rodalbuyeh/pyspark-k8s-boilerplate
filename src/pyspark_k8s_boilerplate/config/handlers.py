@@ -42,6 +42,10 @@ class GeneralConfig(Config):
 	def test_configs(self) -> List[str]:
 		return self._config["general"]["sample_configs"]
 
+	@property
+	def interactive_time_limit(self) -> int:
+		return int(self._config["general"]["interactive_time_limit"])
+
 
 class DataConfig(Config):
 	@property
