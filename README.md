@@ -46,4 +46,4 @@ note if they are having problems with image pull, run docker pull to get image l
 
 I think you HAVE to reference the infrastructure and auth setup, and also indicate that you HAVE to patch the registry on the cluster. 
 
-I think I'll move all of the terraform stuff into a directory here. Call it terraform.    
+I think I'll move all of the terraform stuff into a directory here. Call it terraform. Put a note that typically you won't have your infra in the same repo depending on the organization.     
