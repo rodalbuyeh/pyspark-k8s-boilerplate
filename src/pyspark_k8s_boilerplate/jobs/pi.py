@@ -1,12 +1,14 @@
 from random import random
 from operator import add
+from typing import Optional
 
 from pyspark_k8s_boilerplate.utils.pyspark import get_spark_session
 from pyspark_k8s_boilerplate.utils.log import logger
 from pyspark_k8s_boilerplate.config.handlers import data_cfg
 
 
-def execute(partitions: int = int(data_cfg.pi_partitions), message: str = "delicious") -> None:
+def execute(partitions: int = int(data_cfg.pi_partitions), message: str = "delicious",
+            output: bool = True) -> Optional[None, float]:
 
     spark = get_spark_session("PythonPi")
 
@@ -26,11 +28,16 @@ def execute(partitions: int = int(data_cfg.pi_partitions), message: str = "delic
     count = spark.sparkContext.parallelize(range(1, n + 1),
                                            partitions).map(f).reduce(add)
 
-    logger.info("Pi is roughly %f" % (4.0 * count / n))
+    result = (4.0 * count / n)
+
+    logger.info("Pi is roughly %f" % result)
 
     logger.info(f"And pi is {message}")
 
     spark.stop()
+
+    if output:
+        return result
 
 
 if __name__ == "__main__":
