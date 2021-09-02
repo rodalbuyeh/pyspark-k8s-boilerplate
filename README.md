@@ -12,6 +12,7 @@ Have a thing about prerequisites
 - kubectl 
 - helm 
 - add environment variables: KUBEUSER, PROJECT (optional and TODO make this conditional in docker)
+- working knowledge of terraform (or other IAC), iam, etc.. 
 THASSIT 
 
 You might also indicate that GCP is an almost-prerequisite if you want to run this for cloud ops 
@@ -46,4 +47,30 @@ note if they are having problems with image pull, run docker pull to get image l
 
 I think you HAVE to reference the infrastructure and auth setup, and also indicate that you HAVE to patch the registry on the cluster. 
 
-I think I'll move all of the terraform stuff into a directory here. Call it terraform. Put a note that typically you won't have your infra in the same repo depending on the organization.     
+I think I'll move all of the terraform stuff into a directory here. Call it terraform. Put a note that typically you won't have your infra in the same repo depending on the organization.   
+
+you'll need envsubst (native on most linux + mac dists) and the following environment vars:
+- PROJECT 
+
+
+Add a description of how the job yamls are structured, with an eye towards how the CLI works.
+
+Walk through the initialization steps of kubernetes cluster (including terraform yaml..)
+
+Blurb on the key file authentication and how there are better authentication methods... have a link to GCP and also make a note on how you'll see similar patterns for other cloud providers. 
+
+A note on the config file, including the yaml itself and the handlers and how it gets called elsewhere. Note that there are other ways of doing the config but I like this one. 
+
+A note on the jobs module, specifically the cloud etl and pi jobs. note that you have to conform to the execute API for the CLI to work.   
+
+A note on the logging module.
+
+A note on the pyspark session module. rename that to sparksession... 
+
+Have a blurb on what docker interactive workflow would look like, how you can do local development on a container and then deploy it. 
+
+Have a quick blurb on benefits of kubernetes over fully managed spark. 
+
+Add some lines on the makefile, what each line does (even document it), and then a breakdown of each step. 
+
+Might want to re-name main.py to cli.py because that's really what it is. 
