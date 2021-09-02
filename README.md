@@ -42,4 +42,8 @@ This can be a heavy weight image so you might want to run this on a build server
 
 Make sure kubnernetes cluster (minikube, perhaps GKE as well) is configured to read from container registry. 
 
-note if they are having problems with image pull, run docker pull to get image locally.   
+note if they are having problems with image pull, run docker pull to get image locally.
+
+I think you HAVE to reference the infrastructure and auth setup, and also indicate that you HAVE to patch the registry on the cluster. 
+
+I think I'll move all of the terraform stuff into a directory here. Call it terraform.    
