@@ -8,7 +8,7 @@ from pyspark_k8s_boilerplate.config.handlers import data_cfg
 
 
 def execute(partitions: int = int(data_cfg.pi_partitions), message: str = "delicious",
-            output: bool = True) -> Optional[None, float]:
+            output: bool = True) -> Optional[float]:
 
     spark = get_spark_session("PythonPi")
 
