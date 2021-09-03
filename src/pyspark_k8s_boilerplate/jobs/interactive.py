@@ -2,10 +2,10 @@ import time
 
 from pyspark_k8s_boilerplate.utils.pyspark import get_spark_session
 from pyspark_k8s_boilerplate.utils.log import logger
-from pyspark_k8s_boilerplate.config.handlers import data_cfg
+from pyspark_k8s_boilerplate.config.handlers import cfg
 
 
-def execute(seconds: int = data_cfg.titanic_root) -> None:
+def execute(seconds: int = cfg.interactive_time_limit) -> None:
 	"""Spark on k8s doesn't have great support for interactive sessions. Run this job to keep the cluster up
 	and SSH in to the driver node to run spark-shell/pyspark/etc"""
 	spark = get_spark_session("interactive")
