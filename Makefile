@@ -126,6 +126,12 @@ lint:                       ## run flake8 linter
 
 analyze: check_types lint   ## run full code analysis
 
+test:			## run tests locally
+	coverage run -m pytest
+
+docker-test: build-image	## run tests in docker
+	docker run pyspark-k8s-boilerplate make test
+
 # spark utilities
 
 get_pyspark_shell_conf:	## move and modify injected spark operator configs for pyspark shell
