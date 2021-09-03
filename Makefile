@@ -126,3 +126,21 @@ lint:                       ## run flake8 linter
 
 analyze: check_types lint   ## run full code analysis
 
+test:			## run tests locally
+	coverage run -m pytest
+
+docker-test: build-image	## run tests in docker
+	docker run pyspark-k8s-boilerplate make test
+
+# spark utilities
+
+get_pyspark_shell_conf:	## move and modify injected spark operator configs for pyspark shell
+	sed '/cluster/d' /opt/spark/conf/spark.properties > /opt/spark/work-dir/spark.properties.interactive
+
+run_k8s_pyspark_shell:	## run pyspark shell on the kubernetes cluster.
+	echo "If yor job does not accept any resources, wait a few seconds to see if the original pods get killed by starting your spark job. If they do not after a minute or so, delete one of the executor pods with the name interactive and that should allow your pysparkshell executors to run."
+
+	kubectl exec pyspark-k8s-boilerplate-interactive-driver -- make get_pyspark_shell_conf
+
+	kubectl exec -it pyspark-k8s-boilerplate-interactive-driver -- /opt/entrypoint.sh bash pyspark --conf spark.driver.bindAddress=$$(kubectl logs pyspark-k8s-boilerplate-interactive-driver | grep bindAddress | cut -d '=' -f 2 | cut -d '-' -f 1 | cut -d 'k' -f 2 | xargs) --properties-file spark.properties.interactive
+

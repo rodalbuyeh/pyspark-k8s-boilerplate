@@ -6,6 +6,9 @@ import time
 from pyspark_k8s_boilerplate.config.handlers import cfg
 from pyspark_k8s_boilerplate.utils.log import logger
 
+# TODO can probably clean up this module a bit
+# TODO optimize imports
+# TODO add docstrings
 
 if __name__ == "__main__":
 
@@ -46,3 +49,5 @@ if __name__ == "__main__":
                 % (args.job_name, str(round((total / 60), 2))))
 
 # TODO document, add unit tests (have it run in docker), add infra code
+# TODO maybe jupyter on master
+# TODO spark history server
