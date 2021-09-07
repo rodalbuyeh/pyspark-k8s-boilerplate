@@ -1,9 +1,10 @@
 import logging
 import os
-from os.path import join
 import pathlib
-import yaml
+from os.path import join
 from typing import List, Any, Dict
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
