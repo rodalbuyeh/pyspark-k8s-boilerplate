@@ -1,6 +1,6 @@
 import time
 
-from pyspark_k8s_boilerplate.config.handlers import cfg
+from pyspark_k8s_boilerplate.config import cfg
 from pyspark_k8s_boilerplate.utils.log import logger
 from pyspark_k8s_boilerplate.utils.pyspark import get_spark_session
 

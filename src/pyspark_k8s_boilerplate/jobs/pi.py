@@ -2,7 +2,7 @@ from operator import add
 from random import random
 from typing import Optional
 
-from pyspark_k8s_boilerplate.config.handlers import data_cfg
+from pyspark_k8s_boilerplate.config import data_cfg
 from pyspark_k8s_boilerplate.utils.log import logger
 from pyspark_k8s_boilerplate.utils.pyspark import get_spark_session
 

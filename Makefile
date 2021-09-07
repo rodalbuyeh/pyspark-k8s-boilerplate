@@ -22,6 +22,9 @@ push-container:		    ## push image to GCR
 
 # k8s commands
 
+get-gke-cred:	    ## get GKE credentials (if applicable)
+	 gcloud container clusters get-credentials $(cluster) --region $(region)
+
 show-k8s-contexts:          ## show available kubernetes contexts
 	kubectl config get-contexts
 

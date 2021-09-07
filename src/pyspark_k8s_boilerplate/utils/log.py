@@ -1,6 +1,6 @@
 import logging
 
-from pyspark_k8s_boilerplate.config.handlers import cfg
+from pyspark_k8s_boilerplate.config import cfg
 
 logger = logging.getLogger(cfg.app_name)
 

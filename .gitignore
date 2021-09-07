@@ -86,14 +86,8 @@ ipython_config.py
 # pyenv
 .python-version
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+
 __pypackages__/
 
 # Celery stuff
@@ -142,3 +136,27 @@ secret-utils/
 # mac stuff
 *.icloud
 * 2*
+
+# Local .terraform directories
+**/.terraform/*
+.terraform*
+# .tfstate files
+*.tfstate.tfstate*
+*.tfstate.*
+terraform.tfstate
+# Crash log files
+crash.log
+
+# Ignore any .tfvars files that are generated automatically for each Terraform
+# run. Most .tfvars files are managed as part of configuration and so should be
+# included in version control.
+
+# example.tfvars
+
+# Ignore override files as they are usually used to override resources locally
+# and so are not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
