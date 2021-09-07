@@ -77,3 +77,6 @@ if __name__ == "__main__":
 # TODO document, add infra code
 # TODO maybe jupyter on master
 # TODO spark history server
+# TODO fix authentication to not use json keyfile.. or just use volume mount
+# TODO remove lame kubectl commands from makefile
+# TODO try moving user=185 earlier in dockerfile.. or do run-as command
