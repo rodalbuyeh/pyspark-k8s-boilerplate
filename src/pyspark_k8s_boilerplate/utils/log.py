@@ -7,7 +7,8 @@ logger = logging.getLogger(cfg.app_name)
 logger.setLevel(logging.INFO)
 
 
-def apply_logger_handlers():
+def apply_logger_handlers() -> None:
+    """Apply generic configuration of logger."""
     # create handlers
     c_handler = logging.StreamHandler()
     f_handler = logging.FileHandler(f'/tmp/{cfg.app_name}.log')
