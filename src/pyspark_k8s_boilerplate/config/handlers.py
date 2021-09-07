@@ -1,9 +1,10 @@
 import logging
 import os
-from os.path import join
 import pathlib
-import yaml
+from os.path import join
 from typing import List, Any, Dict
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,10 @@ class GeneralConfig(Config):
 	def interactive_time_limit(self) -> int:
 		return int(self._config["general"]["interactive_time_limit"])
 
+	@property
+	def log_bucket(self) -> str:
+		return self._config["general"]["log_bucket"]
+
 
 class DataConfig(Config):
 	@property
@@ -82,9 +87,3 @@ class ModelConfig(Config):
 	def exclude_features(self) -> List[str]:
 		return self._config["model"]["exclude_features"]
 
-
-cfg: GeneralConfig = GeneralConfig()
-
-data_cfg: DataConfig = DataConfig()
-
-model_cfg: ModelConfig = ModelConfig()

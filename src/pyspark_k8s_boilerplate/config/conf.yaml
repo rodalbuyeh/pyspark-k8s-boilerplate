@@ -2,6 +2,7 @@ general:
   app_name: pyspark_k8s_boilerplate
   sample_configs: [1, 2, 3, 4]
   interactive_time_limit: 86400
+  log_bucket: gs://spark-logging-test/logs/
 data:
   object_bucket: scratch_bucket
   database: BigQueryDev

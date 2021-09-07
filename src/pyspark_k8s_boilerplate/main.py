@@ -1,16 +1,16 @@
 import argparse
+from argparse import Namespace
 import importlib
 import os
 import time
+from typing import Dict, Tuple
 
-from pyspark_k8s_boilerplate.config.handlers import cfg
+from pyspark_k8s_boilerplate.config import cfg
 from pyspark_k8s_boilerplate.utils.log import logger
 
-# TODO can probably clean up this module a bit
-# TODO optimize imports
-# TODO add docstrings
 
-if __name__ == "__main__":
+def get_args() -> Namespace:
+    """Get arguments passed to pyspark entrypoint."""
 
     parser = argparse.ArgumentParser(description=f"Run a {cfg.app_name} job")
     parser.add_argument('--job', type=str, required=True, dest='job_name',
@@ -19,24 +19,40 @@ if __name__ == "__main__":
                         help="extra args to send to the job, for instance:"
                              " jobs=prep, jobs=train")
 
-    args = parser.parse_args()
-    logger.info("Called with arguments %s" % args)
+    arguments = parser.parse_args()
+
+    logger.info("Called with arguments %s" % arguments)
+
+    return arguments
+
+
+def get_job_args(arguments: Namespace) -> Tuple[Dict[str, str],
+                                                Dict[str, str]]:
+    """Get any additional job arguments associated with a given spark job."""
 
     environment = {
-        'JOB-ARGS': ' '.join(args.job_args) if args.job_args else ''
+        'JOB-ARGS': ' '.join(arguments.job_args) if arguments.job_args else ''
     }
 
-    if args.job_args:
-        job_args_tuples = [arg_str.split('=') for arg_str in args.job_args]
+    if arguments.job_args:
+        job_args_tuples = [arg_str.split('=') for arg_str in
+                           arguments.job_args]
         logger.info('job_args_tuples: %s' % job_args_tuples)
         job_args = {a[0]: a[1] for a in job_args_tuples}
     else:
         job_args = {}
 
     logger.info('\nRunning job %s...\nenvironment is %s\n'
-                % (args.job_name, environment))
+                % (arguments.job_name, environment))
 
-    os.environ.update(environment)
+    return job_args, environment
+
+
+def run_job(args: Namespace, job_args: Dict[str, str]) -> None:
+    """
+    Run the desired pyspark job with any indicated module and job arguments.
+    """
+
     job_module = importlib.import_module(args.job_name)
 
     start = time.time()
@@ -48,6 +64,16 @@ if __name__ == "__main__":
     logger.info("\nExecution of job %s took %s minutes."
                 % (args.job_name, str(round((total / 60), 2))))
 
-# TODO document, add unit tests (have it run in docker), add infra code
+
+if __name__ == "__main__":
+    args = get_args()
+
+    job_args, env = get_job_args(args)
+
+    os.environ.update(env)
+
+    run_job(args, job_args)
+
+# TODO document, add infra code
 # TODO maybe jupyter on master
 # TODO spark history server
