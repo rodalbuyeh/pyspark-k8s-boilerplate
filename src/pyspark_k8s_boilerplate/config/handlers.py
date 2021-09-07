@@ -87,9 +87,3 @@ class ModelConfig(Config):
 	def exclude_features(self) -> List[str]:
 		return self._config["model"]["exclude_features"]
 
-
-cfg: GeneralConfig = GeneralConfig()
-
-data_cfg: DataConfig = DataConfig()
-
-model_cfg: ModelConfig = ModelConfig()

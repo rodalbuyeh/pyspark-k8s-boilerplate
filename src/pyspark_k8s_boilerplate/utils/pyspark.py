@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession  # type: ignore
-from pyspark_k8s_boilerplate.config.handlers import cfg
+from pyspark_k8s_boilerplate.config import cfg
 from pyspark_k8s_boilerplate.utils.log import logger
 
 
