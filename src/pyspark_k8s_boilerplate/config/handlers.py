@@ -46,6 +46,10 @@ class GeneralConfig(Config):
 	def interactive_time_limit(self) -> int:
 		return int(self._config["general"]["interactive_time_limit"])
 
+	@property
+	def log_bucket(self) -> str:
+		return self._config["general"]["log_bucket"]
+
 
 class DataConfig(Config):
 	@property
