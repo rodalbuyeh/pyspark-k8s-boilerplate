@@ -37,7 +37,7 @@ else
 endif
 
 start-k8s-local:            ## start local k8s via minikube
-	minikube start --driver=hyperkit --memory 8192 --cpus 4 --mount-string=$(shell pwd)/secrets:/secrets
+	minikube start --driver=hyperkit --memory 8192 --cpus 4
 
 stop-k8s-local:             ## stop local k8s
 	minikube stop
