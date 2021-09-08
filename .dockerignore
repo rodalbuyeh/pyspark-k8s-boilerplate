@@ -140,3 +140,6 @@ secret-utils/
 # mac stuff
 *.icloud
 * 2*
+
+secrets/key-file
+secrets/key-file-k8s-secret.yaml

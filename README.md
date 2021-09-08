@@ -75,4 +75,6 @@ Add some lines on the makefile, what each line does (even document it), and then
 
 Might want to re-name main.py to cli.py because that's really what it is. 
 
-The interactive shell thing could be a 'clever solution to a stupid problem.' This is especially important given that MANY DS folks use spark instead of SQL for interactive analyses. Put a note that you can either run an interactive session in a container, and then explain that the current implementation of spark operator doesn't have a good solution for distributed interactive sessions so I made a workaround that is somewhat janky but seems to work. Remember.. you have to launch the job then kill one of the executors then you can ssh in..  
+The interactive shell thing could be a 'clever solution to a stupid problem.' This is especially important given that MANY DS folks use spark instead of SQL for interactive analyses. Put a note that you can either run an interactive session in a container, and then explain that the current implementation of spark operator doesn't have a good solution for distributed interactive sessions so I made a workaround that is somewhat janky but seems to work. Remember.. you have to launch the job then kill one of the executors then you can ssh in.. 
+
+Okay another prereq is that you mount the key file locally for docker interactive sessions, and then apply the key-file yaml with base64 encoding

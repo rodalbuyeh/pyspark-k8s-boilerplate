@@ -31,6 +31,10 @@ spec:
     volumeMounts:
       - name: "shared-volume"
         mountPath: "/shared"
+    secrets:
+      - name: key-file
+        path: /secrets
+        secretType: generic
   executor:
     cores: 1
     instances: 2
@@ -40,3 +44,7 @@ spec:
     volumeMounts:
       - name: "shared-volume"
         mountPath: "/shared"
+    secrets:
+      - name: key-file
+        path: /secrets
+        secretType: generic

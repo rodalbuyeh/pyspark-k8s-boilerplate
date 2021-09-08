@@ -14,7 +14,7 @@ build-image:                ## build docker image
 	docker build -t pyspark-k8s-boilerplate:latest . --build-arg gcp_project=${PROJECT}
 
 it-shell: build-image       ## run interactive shell in docker container
-	docker run -it pyspark-k8s-boilerplate bash
+	docker run --mount type=bind,source=$(shell pwd)/secrets,target=/secrets -it pyspark-k8s-boilerplate bash
 
 push-container:		    ## push image to GCR
 	docker tag pyspark-k8s-boilerplate gcr.io/${PROJECT}/pyspark-k8s-boilerplate
@@ -66,6 +66,7 @@ init-spark-k8s:             ## inititalize spark on kubernetes environment in yo
 	sleep 5
 	kubectl get pods
 	kubectl apply -f manifests/spark-rbac.yaml
+	kubectl apply -f secrets/key-file-k8s-secret.yaml
 
 spark-port-forward:	    ## port forward spark UI to localhost:4041
 ifdef spark-driver
