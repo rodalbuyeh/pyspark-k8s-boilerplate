@@ -103,14 +103,6 @@ RUN curl https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz \
 
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
-# activate gcloud service account (but use better secret management in prod...)
-ADD secrets/key-file /key-file
-RUN gcloud auth activate-service-account --key-file=/key-file
-
-# set service account authentication as application default credentials if you
-# want to use it in context of other libs
-ENV GOOGLE_APPLICATION_CREDENTIALS /key-file
-
 # set default project
 RUN gcloud config set project ${gcp_project}
 
