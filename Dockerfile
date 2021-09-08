@@ -124,6 +124,9 @@ RUN chmod g+w /opt/spark/work-dir
 RUN chmod a+x /opt/decom.sh
 ADD . /opt/spark/work-dir
 
+RUN sed -i '2iexport GOOGLE_APPLICATION_CREDENTIALS=/secrets/key-file' /opt/entrypoint.sh
+RUN sed -i '3igcloud auth activate-service-account --key-file=/secrets/key-file --verbosity=none' /opt/entrypoint.sh
+
 RUN make clean-install
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
