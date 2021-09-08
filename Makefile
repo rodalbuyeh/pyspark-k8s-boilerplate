@@ -25,25 +25,9 @@ push-container:		    ## push image to GCR
 get-gke-cred:	    ## get GKE credentials (if applicable)
 	 gcloud container clusters get-credentials $(cluster) --region $(region)
 
-show-k8s-contexts:          ## show available kubernetes contexts
-	kubectl config get-contexts
-
-use-k8s-context:	    ## switch to a different k8s context
-ifdef name
-	kubectl config use-context $(name)
-else
-	@echo 'No name defined. Run *kubectl config get-contexts pods* then indicate selection as follows:'
-	@echo 'make name=clustername use_k8s_context'
-endif
 
 start-k8s-local:            ## start local k8s via minikube
 	minikube start --driver=hyperkit --memory 8192 --cpus 4
-
-stop-k8s-local:             ## stop local k8s
-	minikube stop
-
-delete-k8s-local:           ## delete local k8s
-	minikube delete
 
 verify-k8s-dns:             ## verify that k8s dns is working properly
 	sleep 10
@@ -75,13 +59,6 @@ else
 	@echo 'No driver defined. Run *kubectl get pods* then indicate as follows: *make spark-driver=podname spark-port-forward*'
 endif
 
-set-default-namespace:	    ## set default k8s namespace
-ifdef namespace
-	kubectl config set-context --current --namespace=$(namespace)
-else
-	@echo 'No namespace defined. Indicate as follows: *make namespace=name set_default_namespace*'
-endif
-
 patch-container-registry:   ## patch cluster to point to private repository - usually necessary for Minikube
 	kubectl --namespace=spark-operator create secret docker-registry gcr-json-key \
 			  --docker-server=https://gcr.io \
@@ -92,21 +69,12 @@ patch-container-registry:   ## patch cluster to point to private repository - us
 	kubectl --namespace=spark-operator patch serviceaccount my-release-spark \
 			  -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
 
-run-job:		    ## run spark job via k8s manifest with injected environment variables
-ifdef manifest
-	envsubst < $(manifest) | kubectl apply -f -
-else
-	@echo 'No manifest defined. Indicate as follows: *make manifest=manifest/job.yaml run-job*'
-endif
 
 # python
 
 create-activate-venv:       ## make and activate python virtual environment
 	${PYSPARK_PYTHON} -m venv env
 	echo "Now run: source env/bin/activate. Finally run: pip install build"
-
-delete-venv:                ## delete python virtual environment
-	rm -r env
 
 build:                      ## build python tarball and wheel
 	${PYSPARK_PYTHON} -m build
