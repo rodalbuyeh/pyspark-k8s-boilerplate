@@ -571,8 +571,3 @@ results in the spark driver rebooting the workers and associating them with your
 It's not a pretty solution, but it works. 
 
 
-## Other things that came to mind...
-
-Put a note on how I build a wheel on local/build server and pushed directly into container, but you can (and should) also push to pypi-like repo to share utilities. 
-
-Note that the structure of this app is data science focused, specifically for batch + lambda layers.. where configs are the input and the output is data, model artifacts, etc. 
