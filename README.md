@@ -404,7 +404,7 @@ of steps already discussed, including building the container, pushing, initializ
 spark, running pyspark tests, etc. You can also view help by running `make help` 
 from the project root: 
 
-```bash
+```text
 ----------------------------------------------------------------------
 The purpose of this Makefile is to abstract common commands for
 building and running the pyspark-k8s-boilerplate application.
