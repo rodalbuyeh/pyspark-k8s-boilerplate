@@ -1,7 +1,5 @@
 # PySpark On Cloud Kubernetes Boilerplate
 
-A fully customized and extendable template for PySpark on cloud Kubernetes.
-
 ### Introduction and Motivation
 After deploying a few production applications in Spark using both the Scala and
 Python APIs, running on both Amazon's EMR and GCP's Dataproc, we've decided to 
@@ -21,12 +19,11 @@ spark would release new features and we did not want to wait for them to be
 propagated to a stable cluster release. 
 2. we like the benefits of containerization which allow for higher speed 
 iteration, environment-agnostic running, and dependency isolation. 
-3. we would like to avoid vendor lock-in to the extent it is possible. 
+3. we would like to avoid vendor lock-in to the extent possible. 
 
 
 ### Prerequisites and Assumptions
 
-- You should be confortable working in a Linux environment 
 - [Working familiaity with docker](https://www.docker.com/get-started).
 - [A local installation of Minikube](https://minikube.sigs.k8s.io/docs/start/) 
 for development and testing.
@@ -34,53 +31,46 @@ for development and testing.
 - [A local installation of helm](https://helm.sh/docs/intro/quickstart/)
 - Permissions to a container registry, either via Dockerhub or a private
 registry (the latter is recommended). 
-- We assume you know how to deal with authentication and permissions on your
- cloud platform, or are working with someone who does. For the purposes of
+- Basic knowledge how to deal with authentication and permissions on your
+ cloud platform. For the purposes of
  this template we prioritize developer friendliness over security, but for 
  production applications please follow industry best practices (more on this
- later). Additionally your kubernetes cluster should be configured to have 
+ later). Your kubernetes cluster should be configured to have 
  permissions to read from the container registry. We will include some sample 
- code for patching your cluster, more on this later.
+ code for patching your cluster.
 - Comfort working in any cloud environment is helpful. The implementation listed
 here is built for GCP's GKE, but it wouldn't take much refactoring to toggle to 
 Amazon's EKS, Azure's AKS, etc. We opted for GKE because we believe it's the 
 best kubernetes service available. 
-- Ideally, working knowledge of terraform 
-[and a local installation of it](https://learn.hashicorp.com/tutorials/terraform/install-cli),
-or any IaC implementation.
+- Ideally,  
+[Working knowledge of Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli).
 
 
 ### The Spark Base Image
 The Dockerfile in the root repository is fully customized to allow for easy
 (but at your own risk) toggling of Spark/Scala/Python/Hadoop/JDK versions. 
 Note that there may be interactions and downstream effects of changing these, 
-so test thoroughly when making changes here. There are defined sections for 
-software installations as well as a block for cloud provider configuration, in
-this case GCP. Feel free to modify, remove, or replace with your provider of 
-choice.
+so test thoroughly when making changes here. 
 
 This base image is also designed to allow for local development as if you are
 on a cloud virtual machine. This means you can run interactive analysis in
 Spark on a docker container running locally. The benefit of this is that 
 prototyping is very cheap and easy to scale. You can also run distributed 
 sessions locally via Minikube, or scale on a cloud cluster by changing the 
-kubectl pointer. The same image can be used to run unit tests, etc. 
+kubectl pointer. The same image can be used to run unit tests, linting, etc. 
 
-Note that the resulting image from this dockerfile can be relatively heavy large,
+The resulting image from this dockerfile can be relatively large,
 so you might want to run the build process remotely on a cloud build server and 
 push to your remote container registry, rather than building locally and 
 pushing layers over the internet.
 
 
-
 ### On Infrastructure as Code 
 
-Note that there is a terraform directory with simple samples for what's 
-necessary to spin up a remote cluster to run this application on. Note that 
-typically you will not have your infrastructure code live in the same repository
-as your application code, this is just for educational/informational purposes. 
-How things are partitioned and maintained really depends on the organization
-structure. 
+There is a terraform directory with basic samples for spinningup a remote 
+Kubernetes cluster. Typically you would not have your infrastructure code live 
+in the same repository as your application code, be aware that this is just for
+ educational/informational purposes. 
 
 
 ### Application and Utility Structure
@@ -127,15 +117,14 @@ spark-defaults.conf
 The main python application is in `src/pyspark_k8s_boilerplate`. Configurations
 can be set in the config directory, with conf.yaml and the handlers classes 
 defining default configurations, which can be overridden by the CLI entrypoint 
-in `src/pyspark_k8s_boilerplate/main.py`. Note that there are specific config
+in `src/pyspark_k8s_boilerplate/main.py`. There are specific config
 handlers defined for different domains, see the classes in handlers.py for more
 information. 
 
-There are three sample jobs that can be used for testing. The lowest bar is 
-the pi.py job, which uses spark to approximate π. The higher bar is the 
-cloud_etl job, which reads titanic.csv in object storage (you should stage 
+There are three sample jobs that can be used for testing. The easiest bar to clear
+ is the pi.py job, which uses spark to approximate π. The harder bar is the 
+cloud_etl job, which reads [titanic.csv](https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv) in object storage (you should stage 
 this in GS, S3, etc). 
-Here's a direct [link](https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv) to the csv. 
 There is also an interactive.py module which we use to bootstrap an interactive
 pyspark session. This was more challenging than expected as kubernetes support 
 for distributed pyspark interactive shell sessions is lacking. More on this later. Note that all of the job modules must have an `execute()` function in order
@@ -147,7 +136,7 @@ Logging is set up in log.py, the pyspark session is initialized in pyspark.py
 and is imported by the respective jobs and unit tests. A few comments about the other project artifacts: MANIFEST.in points to the 
 yaml file which will be included in the python wheel/tarball distribution. 
 pyproject.toml specifies the build requirements. We use setup.cfg in lieu of 
-a setup.py file but in effect it serves the same function. The spark-defaults.conf file is critical for two things: enabling distributed
+a setup.py file--it serves the same function. The spark-defaults.conf file is critical for two things: enabling distributed
 read from object storage, and pointing to the key file which gets mounted as a 
 volume to the pod. 
 
@@ -161,14 +150,15 @@ export PROJECT=$(gcloud info --format='value(config.project)')
 export KUBEUSER='name'
 export KUBEDOMAIN='domain.com'
 ```
-You can modify and source the env.example file if it is more convenient. 
+You can modify and source the env.example file in the project root if it is 
+more convenient. 
 
 ### Cloud Authentication
 There are many ways to handle authentication. For instance, GCP offers
 [a number of methods](https://cloud.google.com/container-registry/docs/advanced-authentication). 
 Here we have tried to strike a balance between clarity and reasonable security. 
-We opted for using a service account key to allow for longer lived
-(and accordingly less overhead but higher risk authentication). Rather than 
+We opted for using a service account key to allow for longer lived authentication
+(and accordingly less overhead but higher risk). Rather than 
 baking the key into the container, we mount it as a volume from a local path, 
 pushed to Kubernetes as a Kubernetes secret. 
 
@@ -181,7 +171,7 @@ comply with your organization's best practices on authentication.
 **Step 0: Have a Kubernetes cluster running locally and remotely, with the 
 spark operator and application dependencies installed and mounted.**
 
-For your local:
+For your local k8s instance:
 
 ```bash
 minikube start --driver=hyperkit --memory 8192 --cpus 4
