@@ -132,26 +132,19 @@ There are three sample jobs that can be used for testing. The lowest bar is
 the pi.py job, which uses spark to approximate π. The higher bar is the 
 cloud_etl job, which reads titanic.csv in object storage (you should stage 
 this in GS, S3, etc). 
-[Here's a direct link to the file](https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv).
-
+[Here's a direct link to the file](https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv). 
 There is also an interactive.py module which we use to bootstrap an interactive
 pyspark session. This was more challenging than expected as kubernetes support 
-for distributed pyspark interactive shell sessions is lacking. More on this later. 
-
-Note that all of the job modules must have an `execute()` function in order
+for distributed pyspark interactive shell sessions is lacking. More on this later. Note that all of the job modules must have an `execute()` function in order
 for the optional (and recommended) command line entrypoint to work. You can also
 run the job.py files directly without the entrypoint, but this includes a loss 
 of flexibility to interactively override configurations.
 
 Logging is set up in log.py, the pyspark session is initialized in pyspark.py
-and is imported by the respective jobs and unit tests. 
-
-A few comments about the other project artifacts: MANIFEST.in points to the 
+and is imported by the respective jobs and unit tests. A few comments about the other project artifacts: MANIFEST.in points to the 
 yaml file which will be included in the python wheel/tarball distribution. 
 pyproject.toml specifies the build requirements. We use setup.cfg in lieu of 
-a setup.py file but in effect it serves the same function. 
-
-The spark-defaults.conf file is critical for two things: enabling distributed
+a setup.py file but in effect it serves the same function. The spark-defaults.conf file is critical for two things: enabling distributed
 read from object storage, and pointing to the key file which gets mounted as a 
 volume to the pod. 
 
@@ -160,21 +153,9 @@ volume to the pod.
 - add environment variables: KUBEUSER, PROJECT (optional and TODO make this conditional in docker)... see: https://www.dev-diaries.com/social-posts/conditional-logic-in-dockerfile/
 THASSIT 
 
-
 - NOTE you can add an environment varibale for PYSPARK_CONFIG_DIR and it'll override the baked-in config 
-- should prob put a burb in the readme on config management 
-
-
-
-
-
-
-
-
-Note that the entrypoint only works if you have an 'execute' method but you can still run modules directly. Main purpose of the cli is to add args to a job that override config.yaml. 
 
 Put a blurb on how they'll need their own container registry/ container repository .
-
 
 Make sure kubnernetes cluster (minikube, perhaps GKE as well) is configured to read from container registry. 
 
@@ -185,7 +166,6 @@ I think you HAVE to reference the infrastructure and auth setup, and also indica
 
 you'll need envsubst (native on most linux + mac dists) and the following environment vars:
 - PROJECT 
-
 
 Add a description of how the job yamls are structured, with an eye towards how the CLI works.
 
