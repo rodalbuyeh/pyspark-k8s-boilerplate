@@ -8,8 +8,6 @@ ENV HADOOP_VERSION=3.2.2 \
     PYTHON_VERSION=3.9 \
     JDK_VERSION=8
 
-# Specify the user that the main process will run as
-#ARG spark_uid=185
 
 # Add packages and configure based on official spark-on-k8s dockerfile
 ENV TINI_VERSION v0.19.0
@@ -103,14 +101,6 @@ RUN curl https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz \
 
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
-# activate gcloud service account (but use better secret management in prod...)
-ADD secrets/key-file /key-file
-RUN gcloud auth activate-service-account --key-file=/key-file
-
-# set service account authentication as application default credentials if you
-# want to use it in context of other libs
-ENV GOOGLE_APPLICATION_CREDENTIALS /key-file
-
 # set default project
 RUN gcloud config set project ${gcp_project}
 
@@ -124,8 +114,9 @@ RUN chmod g+w /opt/spark/work-dir
 RUN chmod a+x /opt/decom.sh
 ADD . /opt/spark/work-dir
 
+RUN sed -i '2iexport GOOGLE_APPLICATION_CREDENTIALS=/secrets/key-file' /opt/entrypoint.sh
+RUN sed -i '3igcloud auth activate-service-account --key-file=/secrets/key-file --verbosity=none' /opt/entrypoint.sh
+
 RUN make clean-install
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
-
-#USER ${spark_uid}

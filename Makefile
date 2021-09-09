@@ -14,36 +14,20 @@ build-image:                ## build docker image
 	docker build -t pyspark-k8s-boilerplate:latest . --build-arg gcp_project=${PROJECT}
 
 it-shell: build-image       ## run interactive shell in docker container
-	docker run -it pyspark-k8s-boilerplate bash
+	docker run --mount type=bind,source=$(shell pwd)/secrets,target=/secrets -it pyspark-k8s-boilerplate bash
 
-push-container:		    ## push image to GCR
+push-image:		    ## push image to GCR
 	docker tag pyspark-k8s-boilerplate gcr.io/${PROJECT}/pyspark-k8s-boilerplate
 	docker push gcr.io/${PROJECT}/pyspark-k8s-boilerplate
 
 # k8s commands
 
-get-gke-cred:	    ## get GKE credentials (if applicable)
+get-gke-cred:	            ## get GKE credentials (if applicable)
 	 gcloud container clusters get-credentials $(cluster) --region $(region)
 
-show-k8s-contexts:          ## show available kubernetes contexts
-	kubectl config get-contexts
-
-use-k8s-context:	    ## switch to a different k8s context
-ifdef name
-	kubectl config use-context $(name)
-else
-	@echo 'No name defined. Run *kubectl config get-contexts pods* then indicate selection as follows:'
-	@echo 'make name=clustername use_k8s_context'
-endif
 
 start-k8s-local:            ## start local k8s via minikube
 	minikube start --driver=hyperkit --memory 8192 --cpus 4
-
-stop-k8s-local:             ## stop local k8s
-	minikube stop
-
-delete-k8s-local:           ## delete local k8s
-	minikube delete
 
 verify-k8s-dns:             ## verify that k8s dns is working properly
 	sleep 10
@@ -66,19 +50,13 @@ init-spark-k8s:             ## inititalize spark on kubernetes environment in yo
 	sleep 5
 	kubectl get pods
 	kubectl apply -f manifests/spark-rbac.yaml
+	kubectl apply -f secrets/key-file-k8s-secret.yaml
 
 spark-port-forward:	    ## port forward spark UI to localhost:4041
 ifdef spark-driver
 	kubectl port-forward -n spark-operator $(spark-driver) 4041:4040
 else
 	@echo 'No driver defined. Run *kubectl get pods* then indicate as follows: *make spark-driver=podname spark-port-forward*'
-endif
-
-set-default-namespace:	    ## set default k8s namespace
-ifdef namespace
-	kubectl config set-context --current --namespace=$(namespace)
-else
-	@echo 'No namespace defined. Indicate as follows: *make namespace=name set_default_namespace*'
 endif
 
 patch-container-registry:   ## patch cluster to point to private repository - usually necessary for Minikube
@@ -91,21 +69,12 @@ patch-container-registry:   ## patch cluster to point to private repository - us
 	kubectl --namespace=spark-operator patch serviceaccount my-release-spark \
 			  -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
 
-run-job:		    ## run spark job via k8s manifest with injected environment variables
-ifdef manifest
-	envsubst < $(manifest) | kubectl apply -f -
-else
-	@echo 'No manifest defined. Indicate as follows: *make manifest=manifest/job.yaml run-job*'
-endif
 
 # python
 
 create-activate-venv:       ## make and activate python virtual environment
 	${PYSPARK_PYTHON} -m venv env
 	echo "Now run: source env/bin/activate. Finally run: pip install build"
-
-delete-venv:                ## delete python virtual environment
-	rm -r env
 
 build:                      ## build python tarball and wheel
 	${PYSPARK_PYTHON} -m build
@@ -129,18 +98,18 @@ lint:                       ## run flake8 linter
 
 analyze: check_types lint   ## run full code analysis
 
-test:			## run tests locally
+test:			    ## run tests locally
 	coverage run -m pytest
 
-docker-test: build-image	## run tests in docker
+docker-test: build-image    ## run tests in docker
 	docker run pyspark-k8s-boilerplate make test
 
 # spark utilities
 
-get_pyspark_shell_conf:	## move and modify injected spark operator configs for pyspark shell
+get_pyspark_shell_conf:	    ## move and modify injected spark operator configs for pyspark shell
 	sed '/cluster/d' /opt/spark/conf/spark.properties > /opt/spark/work-dir/spark.properties.interactive
 
-run_k8s_pyspark_shell:	## run pyspark shell on the kubernetes cluster.
+run_k8s_pyspark_shell:	    ## run pyspark shell on the kubernetes cluster.
 	echo "If yor job does not accept any resources, wait a few seconds to see if the original pods get killed by starting your spark job. If they do not after a minute or so, delete one of the executor pods with the name interactive and that should allow your pysparkshell executors to run."
 
 	kubectl exec pyspark-k8s-boilerplate-interactive-driver -- make get_pyspark_shell_conf

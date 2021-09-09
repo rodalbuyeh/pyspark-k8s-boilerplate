@@ -74,6 +74,4 @@ if __name__ == "__main__":
 
     run_job(args, job_args)
 
-# TODO document, add infra code
-# TODO maybe jupyter on master
 # TODO spark history server
