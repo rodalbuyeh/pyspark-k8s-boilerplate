@@ -176,7 +176,107 @@ If you are working with PII data, please consult your system administrators and
 comply with your organization's best practices on authentication. 
 
 
-### Initializing Kubernetes for Spark
+### Order of Operations for Initialization
+
+**Step 0: Have a Kubernetes cluster running locally and remotely, with the 
+spark operator and application dependencies installed and mounted.**
+
+For your local:
+
+```bash
+minikube start --driver=hyperkit --memory 8192 --cpus 4
+```
+
+Toggle resources as you see fit. 
+
+For GKE as used in this example, run this from the terraform directory:
+
+```bash
+terraform apply
+```
+
+Create a spark namespace: 
+
+```bash 
+kubectl apply -f manifests/spark-namespace.yaml
+```
+
+Install the spark operator: 
+
+```bash
+helm repo add spark-operator https://googlecloudplatform.github.io/spark-on-k8s-operator
+helm install my-release spark-operator/spark-operator --namespace spark-operator --set image.tag=v1beta2-1.2.3-3.1.1
+```
+
+Create a cluster role binding: 
+```bash
+kubectl create clusterrolebinding ${KUBEUSER}-cluster-admin-binding --clusterrole=cluster-admin \
+--user=${KUBEUSER}@${KUBEDOMAIN}
+```
+
+Set the spark operator namespace as default if it is not already:
+
+```bash
+kubectl config set-context --current --namespace=spark-operator
+```
+
+Initialize spark RBAC: 
+
+```bash
+kubectl apply -f manifests/spark-rbac.yaml
+```
+
+Push your base64 encoded key-file to kubernetes as a [secret](https://kubernetes.io/docs/concepts/configuration/secret/): 
+
+```bash
+kubectl apply -f secrets/key-file-k8s-secret.yaml
+```
+	
+Verify that DNS is working properly:
+
+```bash
+kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml
+sleep 20
+kubectl exec -i -t dnsutils -- nslookup kubernetes.default
+kubectl delete -f https://k8s.io/examples/admin/dns/dnsutils.yaml
+```
+
+If things are working correctly, the result should look something like this:
+
+```bash
+Server:    10.0.0.10
+Address 1: 10.0.0.10
+
+Name:      kubernetes.default
+Address 1: 10.0.0.1
+```
+
+If not, see [these instructions](https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/#check-the-local-dns-configuration-first) to debug. 
+
+If you are using a private repository, patch your cluster to use service account credentials:
+
+```bash
+kubectl --namespace=spark-operator create secret docker-registry gcr-json-key \
+          --docker-server=https://gcr.io \
+          --docker-username=_json_key \
+          --docker-password="$$(cat secrets/key-file)" \
+          --docker-email=${KUBEUSER}@${KUBEDOMAIN}
+
+kubectl --namespace=spark-operator patch serviceaccount my-release-spark \
+          -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
+```
+
+Step 1: Build and push your image.
+
+```bash
+docker build -t pyspark-k8s-boilerplate:latest . --build-arg gcp_project=${PROJECT}
+docker tag pyspark-k8s-boilerplate gcr.io/${PROJECT}/pyspark-k8s-boilerplate
+docker push gcr.io/${PROJECT}/pyspark-k8s-boilerplate
+```
+
+Note that you might have another root for the container registry. 
+
+Step 2: 
 
 note if they are having problems with image pull, run docker pull to get image locally.
 
@@ -205,3 +305,10 @@ Add some lines on the makefile, what each line does (even document it), and then
 The interactive shell thing could be a 'clever solution to a stupid problem.' This is especially important given that MANY DS folks use spark instead of SQL for interactive analyses. Put a note that you can either run an interactive session in a container, and then explain that the current implementation of spark operator doesn't have a good solution for distributed interactive sessions so I made a workaround that is somewhat janky but seems to work. Remember.. you have to launch the job then kill one of the executors then you can ssh in.. 
 
 Okay another prereq is that you mount the key file locally for docker interactive sessions, and then apply the key-file yaml with base64 encoding
+
+
+## Other things that came to mind...
+
+Put a note on how I build a wheel on local/build server and pushed directly into container, but you can (and should) also push to pypi-like repo to share utilities. 
+
+Note that the structure of this app is data science focused, specifically for batch + lambda layers.. where configs are the input and the output is data, model artifacts, etc. 

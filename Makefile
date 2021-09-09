@@ -16,7 +16,7 @@ build-image:                ## build docker image
 it-shell: build-image       ## run interactive shell in docker container
 	docker run --mount type=bind,source=$(shell pwd)/secrets,target=/secrets -it pyspark-k8s-boilerplate bash
 
-push-container:		    ## push image to GCR
+push-image:		    ## push image to GCR
 	docker tag pyspark-k8s-boilerplate gcr.io/${PROJECT}/pyspark-k8s-boilerplate
 	docker push gcr.io/${PROJECT}/pyspark-k8s-boilerplate
 
