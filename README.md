@@ -32,11 +32,15 @@ iteration, environment-agnostic running, and dependency isolation.
 for development and testing.
 - [Working familiarity with kubectl's API](https://kubernetes.io/docs/tasks/tools/)
 - [A local installation of helm](https://helm.sh/docs/intro/quickstart/)
+- Permissions to a container registry, either via Dockerhub or a private
+registry (the latter is recommended). 
 - We assume you know how to deal with authentication and permissions on your
  cloud platform, or are working with someone who does. For the purposes of
  this template we prioritize developer friendliness over security, but for 
  production applications please follow industry best practices (more on this
- later). 
+ later). Additionally your kubernetes cluster should be configured to have 
+ permissions to read from the container registry. We will include some sample 
+ code for patching your cluster, more on this later.
 - Comfort working in any cloud environment is helpful. The implementation listed
 here is built for GCP's GKE, but it wouldn't take much refactoring to toggle to 
 Amazon's EKS, Azure's AKS, etc. We opted for GKE because we believe it's the 
@@ -118,7 +122,6 @@ MANIFEST.in
 pyproject.toml
 setup.cfg
 spark-defaults.conf
-
 ```
 
 The main python application is in `src/pyspark_k8s_boilerplate`. Configurations
@@ -148,34 +151,56 @@ a setup.py file but in effect it serves the same function. The spark-defaults.co
 read from object storage, and pointing to the key file which gets mounted as a 
 volume to the pod. 
 
+### Required environment variables for development 
+
+We have tried to keep the required environment variables to a minimum for the 
+purposes of this template. All you should need is the following:
+
+```bash
+export PROJECT=$(gcloud info --format='value(config.project)')
+export KUBEUSER='name'
+export KUBEDOMAIN='domain.com'
+```
+You can modify and source the env.example file if it is more convenient. 
+
+### Cloud Authentication
+There are many ways to handle authentication. For instance, GCP offers
+[a number of methods](https://cloud.google.com/container-registry/docs/advanced-authentication). 
+Here we have tried to strike a balance between clarity and reasonable security. 
+We opted for using a service account key to allow for longer lived
+(and accordingly less overhead but higher risk authentication). Rather than 
+baking the key into the container, we mount it as a volume from a local path, 
+pushed to Kubernetes as a Kubernetes secret. 
+
+If you are working with PII data, please consult your system administrators and
+comply with your organization's best practices on authentication. 
 
 
-- add environment variables: KUBEUSER, PROJECT (optional and TODO make this conditional in docker)... see: https://www.dev-diaries.com/social-posts/conditional-logic-in-dockerfile/
-THASSIT 
-
-- NOTE you can add an environment varibale for PYSPARK_CONFIG_DIR and it'll override the baked-in config 
-
-Put a blurb on how they'll need their own container registry/ container repository .
-
-Make sure kubnernetes cluster (minikube, perhaps GKE as well) is configured to read from container registry. 
+### Initializing Kubernetes for Spark
 
 note if they are having problems with image pull, run docker pull to get image locally.
 
-I think you HAVE to reference the infrastructure and auth setup, and also indicate that you HAVE to patch the registry on the cluster. 
+Walk through the initialization steps of kubernetes cluster (including terraform yaml..)
 
+I think you HAVE to reference the infrastructure and auth setup, and also indicate that you HAVE to patch the registry on the cluster. 
 
 you'll need envsubst (native on most linux + mac dists) and the following environment vars:
 - PROJECT 
 
+
+### Running jobs
+
 Add a description of how the job yamls are structured, with an eye towards how the CLI works.
 
-Walk through the initialization steps of kubernetes cluster (including terraform yaml..)
-
-Blurb on the key file authentication and how there are better authentication methods... have a link to GCP and also make a note on how you'll see similar patterns for other cloud providers. 
+### Interactive workflow
 
 Have a blurb on what docker interactive workflow would look like, how you can do local development on a container and then deploy it. 
 
+### On the makefile 
+
 Add some lines on the makefile, what each line does (even document it), and then a breakdown of each step. 
+
+### Bootstrapping Interactive Distributed Pyspark Sessions 
 
 The interactive shell thing could be a 'clever solution to a stupid problem.' This is especially important given that MANY DS folks use spark instead of SQL for interactive analyses. Put a note that you can either run an interactive session in a container, and then explain that the current implementation of spark operator doesn't have a good solution for distributed interactive sessions so I made a workaround that is somewhat janky but seems to work. Remember.. you have to launch the job then kill one of the executors then you can ssh in.. 
 
