@@ -176,7 +176,7 @@ If you are working with PII data, please consult your system administrators and
 comply with your organization's best practices on authentication. 
 
 
-### Order of Operations for Initialization
+### Order of Operations for Running K8s Spark Jobs 
 
 **Step 0: Have a Kubernetes cluster running locally and remotely, with the 
 spark operator and application dependencies installed and mounted.**
@@ -266,7 +266,7 @@ kubectl --namespace=spark-operator patch serviceaccount my-release-spark \
           -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
 ```
 
-Step 1: Build and push your image.
+**Step 1: Build and push your image.**
 
 ```bash
 docker build -t pyspark-k8s-boilerplate:latest . --build-arg gcp_project=${PROJECT}
@@ -276,31 +276,164 @@ docker push gcr.io/${PROJECT}/pyspark-k8s-boilerplate
 
 Note that you might have another root for the container registry. 
 
-Step 2: 
+**Step 2: Run desired job via Kubernetes manifest.**
 
-note if they are having problems with image pull, run docker pull to get image locally.
+For example:
 
-Walk through the initialization steps of kubernetes cluster (including terraform yaml..)
+```bash
+kubectl apply -f manifests/pyspark-k8s-boilerplate-cloud-etl.yaml
+```
 
-I think you HAVE to reference the infrastructure and auth setup, and also indicate that you HAVE to patch the registry on the cluster. 
+Note the structure of the cloud etl yaml file: 
 
-you'll need envsubst (native on most linux + mac dists) and the following environment vars:
-- PROJECT 
+```yaml
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: pyspark-k8s-boilerplate-cloud-etl
+  namespace: spark-operator
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: "gcr.io/${PROJECT}/pyspark-k8s-boilerplate:latest"
+  imagePullPolicy: Always
+  mainApplicationFile: local:///opt/spark/work-dir/src/pyspark_k8s_boilerplate/main.py
+  arguments:
+    - --job
+    - pyspark_k8s_boilerplate.jobs.cloud_etl
+  sparkVersion: "3.1.2"
+  restartPolicy:
+    type: Never
+  volumes:
+    - name: "shared-volume"
+      hostPath:
+        path: "/shared"
+        type: Directory
+  driver:
+    cores: 1
+    coreLimit: "1200m"
+    memory: "512m"
+    labels:
+      version: 3.1.2
+    serviceAccount: my-release-spark
+    volumeMounts:
+      - name: "shared-volume"
+        mountPath: "/shared"
+    secrets:
+      - name: key-file
+        path: /secrets
+        secretType: generic
+  executor:
+    cores: 1
+    instances: 1
+    memory: "1024m"
+    labels:
+      version: 3.1.2
+    volumeMounts:
+      - name: "shared-volume"
+        mountPath: "/shared"
+    secrets:
+      - name: key-file
+        path: /secrets
+        secretType: generic
+```
+
+See the [spark operator user guide](https://github.com/GoogleCloudPlatform/spark-on-k8s-operator/blob/master/docs/user-guide.md)
+for more details on this. We will note a few critical details here. The
+`image` key should correspond to your application's docker image, as follows:
+```yaml
+image: "gcr.io/${PROJECT}/pyspark-k8s-boilerplate:latest"
+```
+
+```mainApplicationFile``` corresponds to the absolute path in the docker container
+to the pyspark application entry point, as follows:
+```yaml
+mainApplicationFile: local:///opt/spark/work-dir/src/pyspark_k8s_boilerplate/main.py
+```
+
+`arguments` corresponds to the arguments passed to the cli entrypoint, 
+the current implementation accepts the job parameter which corresponds to the actual
+module in the application, and the execute function accepts additional parameters 
+via the `--job-args` argument. Seee the following from the pyspark-k8s-boilerplate-pi.yaml:
+
+```yaml
+  arguments:
+    - --job
+    - pyspark_k8s_boilerplate.jobs.pi
+    - --job-args
+    - partitions=10
+    - message=yummy
+```
+
+To view the spark UI for a running job, you can run the following to port
+forward and access the UI at localhost:4041
+
+```bash
+kubectl port-forward -n spark-operator $(spark-driver) 4041:4040
+```
 
 
-### Running jobs
+### Python Development Workflow
 
-Add a description of how the job yamls are structured, with an eye towards how the CLI works.
+You can run tests (pytest with code coverage) in the docker container as follows:
 
-### Interactive workflow
+```bash
+docker run pyspark-k8s-boilerplate make test
+```
 
-Have a blurb on what docker interactive workflow would look like, how you can do local development on a container and then deploy it. 
+You can also run interactive sessions by running a docker container with the
+secrets directory which contains your keyfile mounted to the container, as 
+follows:
 
-### On the makefile 
+```bash
+docker run --mount type=bind,source=/abs/path/to/secrets,target=/secrets -it pyspark-k8s-boilerplate bash
+```
 
-Add some lines on the makefile, what each line does (even document it), and then a breakdown of each step. 
+Then you can run make commands to build and install the python tarball and wheel.
+More on this in the Makefile section. 
 
-### Bootstrapping Interactive Distributed Pyspark Sessions 
+You can also run `make analyze` in the running container to get code analysis. 
+
+
+### On the Makefile 
+
+For this project we rely heavily on Make, rather than a variety of shell scripts
+and functions. Here are the current available make commands which can be run for a variety 
+of steps already discussed, including building the container, pushing, initializing
+spark, running pyspark tests, etc. You can also view help by running `make help` 
+from the project root: 
+
+```bash
+----------------------------------------------------------------------
+The purpose of this Makefile is to abstract common commands for
+building and running the pyspark-k8s-boilerplate application.
+----------------------------------------------------------------------
+help:                       show this help
+build-image:                build docker image
+it-shell: build-image       run interactive shell in docker container
+push-image:                 push image to GCR
+get-gke-cred:               get GKE credentials (if applicable)
+start-k8s-local:            start local k8s via minikube
+verify-k8s-dns:             verify that k8s dns is working properly
+init-spark-k8s:             inititalize spark on kubernetes environment in your current kubectl context
+spark-port-forward:         port forward spark UI to localhost:4041
+patch-container-registry:   patch cluster to point to private repository - usually necessary for Minikube
+create-activate-venv:       make and activate python virtual environment
+build:                      build python tarball and wheel
+install:                    install python wheel
+clean-install: clean build  clean artifacts and install install python wheel
+clean:                      clean artifacts
+check_types:                run mypy type checker
+lint:                       run flake8 linter
+analyze: check_types lint   run full code analysis
+test:                       run tests locally
+docker-test: build-image    run tests in docker
+get_pyspark_shell_conf:     move and modify injected spark operator configs for pyspark shell
+run_k8s_pyspark_shell:      run pyspark shell on the kubernetes cluster
+```
+
+### BONUS: Bootstrapping Interactive Distributed Pyspark Sessions 
 
 The interactive shell thing could be a 'clever solution to a stupid problem.' This is especially important given that MANY DS folks use spark instead of SQL for interactive analyses. Put a note that you can either run an interactive session in a container, and then explain that the current implementation of spark operator doesn't have a good solution for distributed interactive sessions so I made a workaround that is somewhat janky but seems to work. Remember.. you have to launch the job then kill one of the executors then you can ssh in.. 
 
