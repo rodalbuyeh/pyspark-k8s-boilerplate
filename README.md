@@ -135,7 +135,7 @@ There are three sample jobs that can be used for testing. The lowest bar is
 the pi.py job, which uses spark to approximate π. The higher bar is the 
 cloud_etl job, which reads titanic.csv in object storage (you should stage 
 this in GS, S3, etc). 
-[Here's a direct link to the file](https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv). 
+Here's a direct [link](https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv) to the csv. 
 There is also an interactive.py module which we use to bootstrap an interactive
 pyspark session. This was more challenging than expected as kubernetes support 
 for distributed pyspark interactive shell sessions is lacking. More on this later. Note that all of the job modules must have an `execute()` function in order
@@ -435,9 +435,140 @@ run_k8s_pyspark_shell:      run pyspark shell on the kubernetes cluster
 
 ### BONUS: Bootstrapping Interactive Distributed Pyspark Sessions 
 
-The interactive shell thing could be a 'clever solution to a stupid problem.' This is especially important given that MANY DS folks use spark instead of SQL for interactive analyses. Put a note that you can either run an interactive session in a container, and then explain that the current implementation of spark operator doesn't have a good solution for distributed interactive sessions so I made a workaround that is somewhat janky but seems to work. Remember.. you have to launch the job then kill one of the executors then you can ssh in.. 
+At the time of this writing, support of spark-shell on kubernetes is an 
+[unresolved issue](https://github.com/GoogleCloudPlatform/spark-on-k8s-operator/issues/621). 
+Spark shell is critical especially for folks in data science and engineering,
+many of whom use spark's powerful API as a substitute for SQL.
 
-Okay another prereq is that you mount the key file locally for docker interactive sessions, and then apply the key-file yaml with base64 encoding
+This project offers two solutions: 
+
+The first solution is a simple one. Because the docker container is authenticated 
+like a cloud VM, you can run the container with mounted credentials and run 
+interactive pyspark sessions. We will use the make syntax to demonstrate access.
+Run the following to access the container's bash shell:
+
+```bash
+make it-shell
+```
+
+In the shell you have full access to GCP's CLI since you have authenticated,
+additionally spark has access to object storage (although it would take additional
+configuration to access any other databases). Now run `pyspark` to acccess the 
+pyspark shell and you should see the following: 
+
+```text
+root@73e559b6ec93:/opt/spark/work-dir# pyspark
+Python 3.9.6 (default, Jul  3 2021, 17:50:42) 
+[GCC 7.5.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /__ / .__/\_,_/_/ /_/\_\   version 3.1.2
+      /_/
+
+Using Python version 3.9.6 (default, Jul  3 2021 17:50:42)
+Spark context Web UI available at http://73e559b6ec93:4040
+Spark context available as 'sc' (master = local[*], app id = local-1631215716325).
+SparkSession available as 'spark'.
+>>> 
+
+```
+
+To test that your local pyspark session is working properly and able to read 
+from storage, test reading the csv:
+
+```python
+df = spark.read.csv("gs://albell-test/titanic.csv", header=True)
+df.limit(10).show() 
+```
+
+and you should see the following:
+
+```text
++-----------+--------+------+--------------------+------+----+-----+-----+----------------+-------+-----+--------+
+|PassengerId|Survived|Pclass|                Name|   Sex| Age|SibSp|Parch|          Ticket|   Fare|Cabin|Embarked|
++-----------+--------+------+--------------------+------+----+-----+-----+----------------+-------+-----+--------+
+|          1|       0|     3|Braund, Mr. Owen ...|  male|  22|    1|    0|       A/5 21171|   7.25| null|       S|
+|          2|       1|     1|Cumings, Mrs. Joh...|female|  38|    1|    0|        PC 17599|71.2833|  C85|       C|
+|          3|       1|     3|Heikkinen, Miss. ...|female|  26|    0|    0|STON/O2. 3101282|  7.925| null|       S|
+|          4|       1|     1|Futrelle, Mrs. Ja...|female|  35|    1|    0|          113803|   53.1| C123|       S|
+|          5|       0|     3|Allen, Mr. Willia...|  male|  35|    0|    0|          373450|   8.05| null|       S|
+|          6|       0|     3|    Moran, Mr. James|  male|null|    0|    0|          330877| 8.4583| null|       Q|
+|          7|       0|     1|McCarthy, Mr. Tim...|  male|  54|    0|    0|           17463|51.8625|  E46|       S|
+|          8|       0|     3|Palsson, Master. ...|  male|   2|    3|    1|          349909| 21.075| null|       S|
+|          9|       1|     3|Johnson, Mrs. Osc...|female|  27|    0|    2|          347742|11.1333| null|       S|
+|         10|       1|     2|Nasser, Mrs. Nich...|female|  14|    1|    0|          237736|30.0708| null|       C|
++-----------+--------+------+--------------------+------+----+-----+-----+----------------+-------+-----+--------+
+```
+
+You should also verify that you have write access via `df.write.parquet(path)`
+
+We also offer a second solution in the event you need a distributed pyspark
+shell. This solution seems to work but is not completely stable as it is 
+not the intended use for a spark session. In the jobs module, you will find 
+`interactive.py`. This is a simple function that reads the `interactive_time_limit` 
+value from conf.yaml (currently set to 24 hours), starts a spark session, and 
+sleeps for 24 hours before ending the session. Here's the full code from that 
+module: 
+
+```python
+import time
+
+from pyspark_k8s_boilerplate.config import cfg
+from pyspark_k8s_boilerplate.utils.log import logger
+from pyspark_k8s_boilerplate.utils.pyspark import get_spark_session
+
+
+def execute(seconds: int = cfg.interactive_time_limit) -> None:
+    """
+    Spark on k8s doesn't have great support for interactive sessions.
+    Run this job to keep the cluster up
+    and SSH in to the driver node to run spark-shell/pyspark/etc
+    """
+
+    spark = get_spark_session("interactive")
+
+    logger.info(f"Begin dummy job to persist cluster. State will "
+                f"last for {seconds} seconds")
+
+    time.sleep(seconds)
+
+    logger.info("Interactive session out of time.")
+
+    spark.stop()
+
+
+if __name__ == "__main__":
+    execute()
+
+```
+
+You can launch the job via `kubectl apply -f manifests/interactive.yaml`. 
+
+Once the job is running, ssh into the driver node via the following two commands:
+
+```bash
+kubectl exec pyspark-k8s-boilerplate-interactive-driver -- make get_pyspark_shell_conf
+kubectl exec -it pyspark-k8s-boilerplate-interactive-driver -- /opt/entrypoint.sh bash pyspark --conf spark.driver.bindAddress=$$(kubectl logs pyspark-k8s-boilerplate-interactive-driver | grep bindAddress | cut -d '=' -f 2 | cut -d '-' -f 1 | cut -d 'k' -f 2 | xargs) --properties-file spark.properties.interactive
+```
+
+The first command runs a make command on the driver, which is a wrapper for: 
+```bash
+sed '/cluster/d' /opt/spark/conf/spark.properties > /opt/spark/work-dir/spark.properties.interactive
+```
+
+This grabs the spark properties, scrubs an irrelevant line for interactive session,and then the second command 
+runs pyspark but reroutes the default configuration to the new spark properties file. Now you
+will find youself in the pyspark shell, but you should wait a few minutes to test if you are able
+to read from object storage. If you are not, the only solution we have found is to kill one of the workers, which 
+results in the spark driver rebooting the workers and associating them with your active spark session.
+
+It's not a pretty solution, but it works. 
 
 
 ## Other things that came to mind...
