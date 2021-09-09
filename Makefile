@@ -16,13 +16,13 @@ build-image:                ## build docker image
 it-shell: build-image       ## run interactive shell in docker container
 	docker run --mount type=bind,source=$(shell pwd)/secrets,target=/secrets -it pyspark-k8s-boilerplate bash
 
-push-container:		    ## push image to GCR
+push-image:		    ## push image to GCR
 	docker tag pyspark-k8s-boilerplate gcr.io/${PROJECT}/pyspark-k8s-boilerplate
 	docker push gcr.io/${PROJECT}/pyspark-k8s-boilerplate
 
 # k8s commands
 
-get-gke-cred:	    ## get GKE credentials (if applicable)
+get-gke-cred:	            ## get GKE credentials (if applicable)
 	 gcloud container clusters get-credentials $(cluster) --region $(region)
 
 
@@ -98,18 +98,18 @@ lint:                       ## run flake8 linter
 
 analyze: check_types lint   ## run full code analysis
 
-test:			## run tests locally
+test:			    ## run tests locally
 	coverage run -m pytest
 
-docker-test: build-image	## run tests in docker
+docker-test: build-image    ## run tests in docker
 	docker run pyspark-k8s-boilerplate make test
 
 # spark utilities
 
-get_pyspark_shell_conf:	## move and modify injected spark operator configs for pyspark shell
+get_pyspark_shell_conf:	    ## move and modify injected spark operator configs for pyspark shell
 	sed '/cluster/d' /opt/spark/conf/spark.properties > /opt/spark/work-dir/spark.properties.interactive
 
-run_k8s_pyspark_shell:	## run pyspark shell on the kubernetes cluster.
+run_k8s_pyspark_shell:	    ## run pyspark shell on the kubernetes cluster.
 	echo "If yor job does not accept any resources, wait a few seconds to see if the original pods get killed by starting your spark job. If they do not after a minute or so, delete one of the executor pods with the name interactive and that should allow your pysparkshell executors to run."
 
 	kubectl exec pyspark-k8s-boilerplate-interactive-driver -- make get_pyspark_shell_conf

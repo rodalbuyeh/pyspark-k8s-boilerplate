@@ -8,8 +8,6 @@ ENV HADOOP_VERSION=3.2.2 \
     PYTHON_VERSION=3.9 \
     JDK_VERSION=8
 
-# Specify the user that the main process will run as
-#ARG spark_uid=185
 
 # Add packages and configure based on official spark-on-k8s dockerfile
 ENV TINI_VERSION v0.19.0
@@ -122,5 +120,3 @@ RUN sed -i '3igcloud auth activate-service-account --key-file=/secrets/key-file 
 RUN make clean-install
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
-
-#USER ${spark_uid}
