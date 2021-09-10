@@ -1,11 +1,5 @@
 # PySpark On Cloud Kubernetes Boilerplate
-&nbsp;
 
----
-* TOC
-{:toc}
-
----
 ### Introduction and Motivation
 After deploying a few production applications in Spark using both the Scala and
 Python APIs, running on both Amazon's EMR and GCP's Dataproc, we've decided to 
