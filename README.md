@@ -179,7 +179,8 @@ minikube start --driver=hyperkit --memory 8192 --cpus 4
 
 Toggle resources as you see fit. 
 
-For GKE as used in this example, run this from the terraform directory:
+For GKE as used in this example, run this from the terraform directory after
+updating the variables.tf to associate with your account:
 
 ```bash
 terraform apply
