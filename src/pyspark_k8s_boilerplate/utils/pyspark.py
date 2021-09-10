@@ -14,5 +14,7 @@ def get_spark_session(app_name: str) -> SparkSession:
 
     return SparkSession.builder.config("spark.eventLog.enabled", "true") \
         .config("spark.eventLog.dir", cfg.log_bucket) \
+        .config("spark.eventLog.rolling.enabled", "true") \
+        .config("spark.eventLog.rolling.maxFileSize", "128m") \
         .appName(app_name) \
         .getOrCreate()

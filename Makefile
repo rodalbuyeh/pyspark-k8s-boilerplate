@@ -46,9 +46,7 @@ init-spark-k8s:             ## inititalize spark on kubernetes environment in yo
 	helm status --namespace spark-operator my-release
 	kubectl config set-context --current --namespace=spark-operator
 	echo 'switched k8s context to spark operator namespace'
-	kubectl get namespace
 	sleep 5
-	kubectl get pods
 	kubectl apply -f manifests/spark-rbac.yaml
 	kubectl apply -f secrets/key-file-k8s-secret.yaml
 
@@ -69,6 +67,12 @@ patch-container-registry:   ## patch cluster to point to private repository - us
 	kubectl --namespace=spark-operator patch serviceaccount my-release-spark \
 			  -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
 
+run-job:		    ## run spark job via k8s manifest with injected environment variables
+ifdef manifest
+	envsubst < $(manifest) | kubectl apply -f -
+else
+	@echo 'No manifest defined. Indicate as follows: *make manifest=manifest/job.yaml run-job*'
+endif
 
 # python
 
