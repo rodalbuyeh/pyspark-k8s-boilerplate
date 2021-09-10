@@ -179,7 +179,8 @@ minikube start --driver=hyperkit --memory 8192 --cpus 4
 
 Toggle resources as you see fit. 
 
-For GKE as used in this example, run this from the terraform directory:
+For GKE as used in this example, run this from the terraform directory after
+updating the variables.tf to associate with your account:
 
 ```bash
 terraform apply
@@ -271,10 +272,11 @@ Note that you might have another root for the container registry.
 For example:
 
 ```bash
-kubectl apply -f manifests/pyspark-k8s-boilerplate-cloud-etl.yaml
+envsubst < manifests/pyspark-k8s-boilerplate-cloud-etl.yaml | kubectl apply -f -
 ```
 
-Note the structure of the cloud etl yaml file: 
+We are using envsubst to inject environment variables into our manifest. Note 
+the structure of the cloud etl yaml file: 
 
 ```yaml
 apiVersion: "sparkoperator.k8s.io/v1beta2"
