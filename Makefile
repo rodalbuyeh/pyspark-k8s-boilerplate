@@ -8,7 +8,7 @@ help:                       ## show this help
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
 
 
-# docker commands -- TODO make the GCP stuff conditional on the build arg!
+# docker commands
 
 build-image:                ## build docker image
 	docker build -t pyspark-k8s-boilerplate:latest . --build-arg gcp_project=${PROJECT}
@@ -33,7 +33,6 @@ verify-k8s-dns:             ## verify that k8s dns is working properly
 	sleep 10
 	kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml
 	sleep 20
-	kubectl get pods dnsutils
 	kubectl exec -i -t dnsutils -- nslookup kubernetes.default
 	kubectl delete -f https://k8s.io/examples/admin/dns/dnsutils.yaml
 
