@@ -4,12 +4,13 @@
 After deploying a few production applications in Spark using both the Scala and
 Python APIs, running on both Amazon's EMR and GCP's Dataproc, we've decided to 
 bite the bullet and build a prod-ready framework for Kubernetes that is fully
-customized, and relatively easy to toggle versions and extend. This project is 
+transparent (i.e. not heavily abstracted behind a pre-baked image) and thus, relatively easy to customize and extend. This project is 
 inspired by a few 'PySpark Boilerplate' versions that are out there, including
 [Eran Kampf's](https://github.com/ekampf/PySpark-Boilerplate),
 [Alex Ioannides's](https://github.com/AlexIoannides/pyspark-example-project), 
 and [Mehdi Ouazza's](https://github.com/mehd-io/pyspark-boilerplate-mehdio)
-respective implementations. 
+respective implementations. This particular implementation is made with data
+science and data engineering development workflows in mind. 
 
 We migrated to Spark on Kubernetes because:
 
@@ -42,15 +43,14 @@ registry (the latter is recommended).
 here is built for GCP's GKE, but it wouldn't take much refactoring to toggle to 
 Amazon's EKS, Azure's AKS, etc. We opted for GKE because we believe it's the 
 best kubernetes service available. 
-- Ideally,  
-[Working knowledge of Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli).
+- Ideally, [Working knowledge of Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli).
 
 
 ### The Spark Base Image
 The Dockerfile in the root repository is fully customized to allow for easy
 (but at your own risk) toggling of Spark/Scala/Python/Hadoop/JDK versions. 
 Note that there may be interactions and downstream effects of changing these, 
-so test thoroughly when making changes here. 
+so test thoroughly when making changes. 
 
 This base image is also designed to allow for local development as if you are
 on a cloud virtual machine. This means you can run interactive analysis in
@@ -67,10 +67,12 @@ pushing layers over the internet.
 
 ### On Infrastructure as Code 
 
-There is a terraform directory with basic samples for spinningup a remote 
+There is a terraform directory with basic samples for spinning up a remote 
 Kubernetes cluster. Typically you would not have your infrastructure code live 
 in the same repository as your application code, be aware that this is just for
- educational/informational purposes. 
+ educational/informational purposes. The cluster setup prioritizes cost efficiency
+ over resilience for production SLAs, you will want to modify to make sure that
+ your spark masters are on non-preemptible instances.
 
 
 ### Application and Utility Structure
