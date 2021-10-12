@@ -1,5 +1,8 @@
 # PySpark On Cloud Kubernetes Boilerplate
 
+Sidecar demo video for this readme can be found 
+[here](https://www.youtube.com/watch?v=iH2CDQJNiAw).
+
 ### Introduction and Motivation
 After deploying a few production applications in Spark using both the Scala and
 Python APIs, running on both Amazon's EMR and GCP's Dataproc, we've decided to 
